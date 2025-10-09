@@ -1,0 +1,4 @@
+# Colocar aqui o nome dos arquivos compilados para não serem versionados
+*.o
+*.out
+*.exe
