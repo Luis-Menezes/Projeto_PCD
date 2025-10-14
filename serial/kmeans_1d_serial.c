@@ -95,6 +95,45 @@ static double assignment_step_1d(const double *X, const double *C, int *assign, 
     return sse;
 }
 
+static double silhouetteSample(double xi, const double *C, const int *assign, int idx, int N, int K) {
+    int cluster = assign[idx];
+    double a = 0.0; // média da distância intra-cluster
+    double b = 1e300; // mínima média da distância ao outro cluster
+
+    int count_a = 0;
+    for (int j = 0; j < N; j++) {
+        if (j == idx) continue; // não conta a si mesmo
+        if (assign[j] == cluster) {
+            a += fabs(xi - C[cluster]);
+            count_a++;
+        }
+    }
+    // Calcula a média intra-cluster
+    if (count_a > 0) a /= count_a;
+    
+
+    for (int c = 0; c < K; c++) {
+        if (c == cluster) continue;
+        double dist = fabs(xi - C[c]);
+        if (dist < b) b = dist;
+    }
+
+    if (a < b) return (b - a) / b;
+    else if (a > b) return (b - a) / a;
+    else return 0.0;
+}
+/* placeholder: cálculo do coeficiente silhouette médio (não implementado) 
+ - Será implementado com base na implementação do scikit-learn: https://github.com/scikit-learn/scikit-learn/blob/c60dae20604f8b9e585fc18a8fa0e0fb50712179/sklearn/metrics/cluster/_unsupervised.py#L203 */
+static double calculaSilhouette(const double *X, const double *C, const int *assign, int N, int K){
+    double silhouette_sum = 0.0;
+    for(int i=0;i<N;i++){
+        // Calcula o coeficiente silhouette para o ponto X[i]
+        // Adiciona ao somatório da média
+        silhouette_sum += silhouetteSample(X[i], C, assign, i, N, K);
+    }
+    return silhouette_sum / N;
+}
+
 /* update: média dos pontos de cada cluster (1D)
    se cluster vazio, copia X[0] (estratégia naive) */
 static void update_step_1d(const double *X, double *C, const int *assign, int N, int K){
