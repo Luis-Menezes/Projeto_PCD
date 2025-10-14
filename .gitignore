@@ -2,6 +2,7 @@
 *.o
 *.out
 *.exe
+.vscode/
 serial/kmeans_1d_naive 
 # Executável do kmeans 1D serial
 
