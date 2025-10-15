@@ -95,7 +95,8 @@ static double assignment_step_1d(const double *X, const double *C, int *assign, 
     return sse;
 }
 
-static double silhouetteSample(double xi, const double *C, const int *assign, int idx, int N, int K) {
+static double silhouetteSample(const double *X, const double *C, const int *assign, int idx, int N, int K) {
+    /* Não paraleliza porque é senão vai ser só serializado */
     int cluster = assign[idx];
     double a = 0.0; // média da distância intra-cluster
     double b = 1e300; // mínima média da distância ao outro cluster
@@ -104,23 +105,36 @@ static double silhouetteSample(double xi, const double *C, const int *assign, in
     for (int j = 0; j < N; j++) {
         if (j == idx) continue; // não conta a si mesmo
         if (assign[j] == cluster) {
-            a += fabs(xi - C[cluster]);
+            a += fabs(X[idx] - X[j]);
             count_a++;
         }
     }
     // Calcula a média intra-cluster
     if (count_a > 0) a /= count_a;
-    
+    else return 0.0; // ponto isolado
 
+    // Calcula a menor distância média inter-cluster (b)
     for (int c = 0; c < K; c++) {
         if (c == cluster) continue;
-        double dist = fabs(xi - C[c]);
-        if (dist < b) b = dist;
+        
+        double dist_sum = 0.0;
+        int count_b = 0;
+        for (int j = 0; j < N; j++) {
+            if (assign[j] == c) {
+                dist_sum += fabs(X[idx] - X[j]);
+                count_b++;
+            }
+        }
+        
+        if (count_b > 0) {
+            double avg_dist = dist_sum / count_b;
+            if (avg_dist < b) b = avg_dist;
+        }
     }
 
-    if (a < b) return (b - a) / b;
-    else if (a > b) return (b - a) / a;
-    else return 0.0;
+    if(b== 1e300) return 0.0; // não há outro cluster
+    if (a==b) return 0.0;
+    else return (b - a) / fmax(a, b);
 }
 /* Implementado com base na implementação do scikit-learn: 
 https://github.com/scikit-learn/scikit-learn/blob/c60dae20604f8b9e585fc18a8fa0e0fb50712179/sklearn/metrics/cluster/_unsupervised.py#L51 */
@@ -129,7 +143,7 @@ static double calculaSilhouette(const double *X, const double *C, const int *ass
     for(int i=0;i<N;i++){
         // Calcula o coeficiente silhouette para o ponto X[i]
         // Adiciona ao somatório da média
-        silhouette_sum += silhouetteSample(X[i], C, assign, i, N, K);
+        silhouette_sum += silhouetteSample(X, C, assign, i, N, K);
     }
     return silhouette_sum / N;
 }

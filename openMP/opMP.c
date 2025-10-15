@@ -13,6 +13,9 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 /* ---------- util CSV 1D: cada linha tem 1 número ---------- */
 static int count_rows(const char *path){
@@ -81,6 +84,8 @@ static void write_centroids_csv(const char *path, const double *C, int K){
 /* assignment: para cada X[i], encontra c com menor (X[i]-C[c])^2 */
 static double assignment_step_1d(const double *X, const double *C, int *assign, int N, int K){
     double sse = 0.0;
+
+    #pragma omp parallel for reduction(+:sse)
     for(int i=0;i<N;i++){
         int best = -1;
         double bestd = 1e300;
@@ -95,7 +100,8 @@ static double assignment_step_1d(const double *X, const double *C, int *assign, 
     return sse;
 }
 
-static double silhouetteSample(double xi, const double *C, const int *assign, int idx, int N, int K) {
+static double silhouetteSample(const double *X, const double *C, const int *assign, int idx, int N, int K) {
+    /* Não paraleliza porque é senão vai ser só serializado */
     int cluster = assign[idx];
     double a = 0.0; // média da distância intra-cluster
     double b = 1e300; // mínima média da distância ao outro cluster
@@ -104,32 +110,46 @@ static double silhouetteSample(double xi, const double *C, const int *assign, in
     for (int j = 0; j < N; j++) {
         if (j == idx) continue; // não conta a si mesmo
         if (assign[j] == cluster) {
-            a += fabs(xi - C[cluster]);
+            a += fabs(X[idx] - X[j]);
             count_a++;
         }
     }
     // Calcula a média intra-cluster
     if (count_a > 0) a /= count_a;
-    
+    else return 0.0; // ponto isolado
 
+    // Calcula a menor distância média inter-cluster (b)
     for (int c = 0; c < K; c++) {
         if (c == cluster) continue;
-        double dist = fabs(xi - C[c]);
-        if (dist < b) b = dist;
+        
+        double dist_sum = 0.0;
+        int count_b = 0;
+        for (int j = 0; j < N; j++) {
+            if (assign[j] == c) {
+                dist_sum += fabs(X[idx] - X[j]);
+                count_b++;
+            }
+        }
+        
+        if (count_b > 0) {
+            double avg_dist = dist_sum / count_b;
+            if (avg_dist < b) b = avg_dist;
+        }
     }
 
-    if (a < b) return (b - a) / b;
-    else if (a > b) return (b - a) / a;
-    else return 0.0;
+    if(b== 1e300) return 0.0; // não há outro cluster
+    if (a==b) return 0.0;
+    else return (b - a) / fmax(a, b);
 }
 /* Implementado com base na implementação do scikit-learn: 
 https://github.com/scikit-learn/scikit-learn/blob/c60dae20604f8b9e585fc18a8fa0e0fb50712179/sklearn/metrics/cluster/_unsupervised.py#L51 */
 static double calculaSilhouette(const double *X, const double *C, const int *assign, int N, int K){
     double silhouette_sum = 0.0;
+    #pragma omp parallel for reduction(+:silhouette_sum)
     for(int i=0;i<N;i++){
         // Calcula o coeficiente silhouette para o ponto X[i]
         // Adiciona ao somatório da média
-        silhouette_sum += silhouetteSample(X[i], C, assign, i, N, K);
+        silhouette_sum += silhouetteSample(X, C, assign, i, N, K);
     }
     return silhouette_sum / N;
 }
@@ -141,11 +161,15 @@ static void update_step_1d(const double *X, double *C, const int *assign, int N,
     int *cnt = (int*)calloc((size_t)K, sizeof(int));
     if(!sum || !cnt){ fprintf(stderr,"Sem memoria no update\n"); exit(1); }
 
+    #pragma omp parallel for
     for(int i=0;i<N;i++){
         int a = assign[i];
+        #pragma omp atomic
         cnt[a] += 1;
+        #pragma omp atomic
         sum[a] += X[i];
     }
+    
     for(int c=0;c<K;c++){
         if(cnt[c] > 0) C[c] = sum[c] / (double)cnt[c];
         else           C[c] = X[0]; /* simples: cluster vazio recebe o primeiro ponto */
@@ -174,6 +198,13 @@ static void kmeans_1d(const double *X, double *C, int *assign,
 
 /* ---------- main ---------- */
 int main(int argc, char **argv){
+    #ifdef _OPENMP
+    omp_set_num_threads(4); // Define o número de threads para OpenMP
+    printf("OpenMP habilitado com %d threads.\n", omp_get_max_threads());
+    #else
+    printf("OpenMP não habilitado. Compilar com -fopenmp para ativar.\n");
+    #endif
+
     if(argc < 3){
         printf("Uso: %s dados.csv centroides_iniciais.csv [max_iter=50] [eps=1e-4] [assign.csv] [centroids.csv]\n", argv[0]);
         printf("Obs: arquivos CSV com 1 coluna (1 valor por linha), sem cabeçalho.\n");

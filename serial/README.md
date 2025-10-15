@@ -6,8 +6,8 @@ A implementação serial do algoritmo K-Means Naive lê pontos e centróides ini
 
 ```bash
 
-gcc -O2 -std=c99 kmeans_1d_serial.c -o kmeans_1d_naive -lm
-./kmeans_1d_naive ../data/dados.csv ../data/centroides_iniciais.csv 50 0.000001 assign.csv centroids.csv
-cat centroids.csv
+gcc -O2 -std=c99 serial/kmeans_1d_serial.c -o serial/kmeans_1d_naive -lm
+./serial/kmeans_1d_naive data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/assign.csv serial/centroids.csv
+cat serial/centroids.csv
 
 ```
