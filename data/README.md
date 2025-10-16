@@ -13,3 +13,12 @@ Para geração dos centróides iniciais, iremos utilizar o método de inicializa
 gcc get_init_centroids.c -o get_init_centroids
 ./get_init_centroids 
 ```
+
+Para compilação dos arquivos de geração dos dados, executar:
+Vale ressaltar que os valores das linhas 22 e 23 são alterados conforme o número de dados que se deseja gerar
+```bash
+gcc -std=c99 geradorDados.c -o geradorDados
+gcc -std=c99 geradorCentroides.c -o geradorCentroides
+./geradorDados 100000 8
+./geradorCentroides 8 
+```
