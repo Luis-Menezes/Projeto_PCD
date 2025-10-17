@@ -44,7 +44,7 @@ int main(int argc, char **argv){
     /* A sememente fixa garante que os dados gerados sejam sempre os mesmos - reprodutibilidade dos testes */
     srand(42);
 
-    FILE *arquivoD = fopen("dados.csv", "w");
+    FILE *arquivoD = fopen("data/dados.csv", "w");
     if(arquivoD == NULL){
         perror("Erro ao criar o arquivo de dados!\n");
         return 1;

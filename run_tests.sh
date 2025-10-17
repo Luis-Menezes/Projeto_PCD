@@ -1,6 +1,16 @@
 #!/bin/bash
 
 echo "Gerando um teste para implementação serial e OpenMP"
+
+echo "Gerando dados e centróides iniciais"
+echo "Gerando 100000 pontos de dados e 8 centróides iniciais"
+echo ""
+
+gcc -std=c99 data/geradorDados.c -o data/geradorDados
+gcc -std=c99 data/geradorCentroides.c -o data/geradorCentroides
+./data/geradorDados 100000 8
+./data/geradorCentroides 8
+
 echo "Compilando ambos os códigos"
 
 # Compile serial version

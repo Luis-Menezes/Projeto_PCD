@@ -13,7 +13,9 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 /* ---------- util CSV 1D: cada linha tem 1 número ---------- */
 static int count_rows(const char *path){
@@ -79,19 +81,15 @@ static void write_centroids_csv(const char *path, const double *C, int K){
 }
 
 /* ---------- k-means 1D ---------- */
-/* AQUI PARALELIZA */
 /* assignment: para cada X[i], encontra c com menor (X[i]-C[c])^2 */
 static double assignment_step_1d(const double *X, const double *C, int *assign, int N, int K){
     double sse = 0.0;
 
-    // A diretiva "parallel for" divide as iterações do laço 'i' entre os threads.
-    // A cláusula "reduction(+:sse)" cria uma cópia local de 'sse' para cada thread.
-    // No final, o OpenMP soma todas as cópias locais no 'sse' original de forma segura.
     #pragma omp parallel for reduction(+:sse)
-    for(int i=0; i<N; i++){
+    for(int i=0;i<N;i++){
         int best = -1;
         double bestd = 1e300;
-        for(int c=0; c<K; c++){
+        for(int c=0;c<K;c++){
             double diff = X[i] - C[c];
             double d = diff*diff;
             if(d < bestd){ bestd = d; best = c; }
@@ -147,9 +145,10 @@ static double silhouetteSample(const double *X, const double *C, const int *assi
 https://github.com/scikit-learn/scikit-learn/blob/c60dae20604f8b9e585fc18a8fa0e0fb50712179/sklearn/metrics/cluster/_unsupervised.py#L51 */
 static double calculaSilhouette(const double *X, const double *C, const int *assign, int N, int K){
     double silhouette_sum = 0.0;
-
     #pragma omp parallel for reduction(+:silhouette_sum)
-    for(int i=0; i<N; i++){
+    for(int i=0;i<N;i++){
+        // Calcula o coeficiente silhouette para o ponto X[i]
+        // Adiciona ao somatório da média
         silhouette_sum += silhouetteSample(X, C, assign, i, N, K);
     }
     return silhouette_sum / N;
@@ -157,77 +156,25 @@ static double calculaSilhouette(const double *X, const double *C, const int *ass
 
 /* update: média dos pontos de cada cluster (1D)
    se cluster vazio, copia X[0] (estratégia naive) */
-/* AQUI PARALELIZA DE DUAS FORMAS DIFERENTES */
-
-/* com base nos docs da atividade - OPCAO A */
-/*static void update_step_1d_critical(const double *X, double *C, const int *assign, int N, int K){
+static void update_step_1d(const double *X, double *C, const int *assign, int N, int K){
     double *sum = (double*)calloc((size_t)K, sizeof(double));
     int *cnt = (int*)calloc((size_t)K, sizeof(int));
     if(!sum || !cnt){ fprintf(stderr,"Sem memoria no update\n"); exit(1); }
 
     #pragma omp parallel for
-    for(int i=0; i<N; i++){
+    for(int i=0;i<N;i++){
         int a = assign[i];
-        // A seção crítica garante que apenas um thread por vez execute
-        // estas duas linhas, evitando a condição de corrida.
-        #pragma omp critical
-        {
-            cnt[a] += 1;
-            sum[a] += X[i];
-        }
+        #pragma omp atomic
+        cnt[a] += 1;
+        #pragma omp atomic
+        sum[a] += X[i];
     }
     
-    // O cálculo final dos centróides é feito de forma serial
-    for(int c=0; c<K; c++){
+    for(int c=0;c<K;c++){
         if(cnt[c] > 0) C[c] = sum[c] / (double)cnt[c];
-        else           C[c] = X[0];
+        else           C[c] = X[0]; /* simples: cluster vazio recebe o primeiro ponto */
     }
     free(sum); free(cnt);
-}
-*/
-
-/* com base nos docs da atividade - OPCAO B */
-static void update_step_1d_local_accum(const double *X, double *C, const int *assign, int N, int K){
-    // Arrays globais para o resultado final
-    double *sum_global = (double*)calloc((size_t)K, sizeof(double));
-    int *cnt_global = (int*)calloc((size_t)K, sizeof(int));
-    if(!sum_global || !cnt_global){ fprintf(stderr,"Sem memoria no update\n"); exit(1); }
-
-    #pragma omp parallel
-    {
-        // 1. Cada thread cria seus próprios acumuladores locais.
-        double *sum_local = (double*)calloc((size_t)K, sizeof(double));
-        int *cnt_local = (int*)calloc((size_t)K, sizeof(int));
-
-        // 2. O laço é dividido. Cada thread atualiza APENAS sua cópia local. Sem concorrência!
-        #pragma omp for
-        for(int i=0; i<N; i++){
-            int a = assign[i];
-            cnt_local[a] += 1;
-            sum_local[a] += X[i];
-        }
-
-        // 3. Após o laço, cada thread adiciona seus resultados locais aos arrays globais.
-        // A seção crítica aqui é muito mais rápida, pois é executada apenas uma vez por thread para cada cluster.
-        for(int c=0; c<K; c++){
-            #pragma omp critical
-            {
-                sum_global[c] += sum_local[c];
-                cnt_global[c] += cnt_local[c];
-            }
-        }
-        
-        // Cada thread libera a memória de seus arrays locais.
-        free(sum_local);
-        free(cnt_local);
-    }
-
-    // O restante do código é executado em um único thread.
-    for(int c=0; c<K; c++){
-        if(cnt_global[c] > 0) C[c] = sum_global[c] / (double)cnt_global[c];
-        else                  C[c] = X[0];
-    }
-    free(sum_global); free(cnt_global);
 }
 
 static void kmeans_1d(const double *X, double *C, int *assign,
@@ -242,9 +189,7 @@ static void kmeans_1d(const double *X, double *C, int *assign,
         /* parada por variação relativa do SSE */
         double rel = fabs(sse - prev_sse) / (prev_sse > 0.0 ? prev_sse : 1.0);
         if(rel < eps){ it++; break; }
-        //update_step_1d(X, C, assign, N, K);
-        //update_step_1d_critical(X, C, assign, N, K); // OPCAO A
-        update_step_1d_local_accum(X, C, assign, N, K); // OPCAO B
+        update_step_1d(X, C, assign, N, K);
         prev_sse = sse;
     }
     *iters_out = it;
@@ -253,6 +198,13 @@ static void kmeans_1d(const double *X, double *C, int *assign,
 
 /* ---------- main ---------- */
 int main(int argc, char **argv){
+    #ifdef _OPENMP
+    omp_set_num_threads(4); // Define o número de threads para OpenMP
+    printf("OpenMP habilitado com %d threads.\n", omp_get_max_threads());
+    #else
+    printf("OpenMP não habilitado. Compilar com -fopenmp para ativar.\n");
+    #endif
+
     if(argc < 3){
         printf("Uso: %s dados.csv centroides_iniciais.csv [max_iter=50] [eps=1e-4] [assign.csv] [centroids.csv]\n", argv[0]);
         printf("Obs: arquivos CSV com 1 coluna (1 valor por linha), sem cabeçalho.\n");
@@ -279,14 +231,14 @@ int main(int argc, char **argv){
     clock_t t0 = clock();
     int iters = 0; double sse = 0.0;
     kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
-    silhouette = calculaSilhouette(X, C, assign, N, K);
+    // silhouette = calculaSilhouette(X, C, assign, N, K);
     clock_t t1 = clock();
     double ms = 1000.0 * (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
 
     printf("K-means 1D (naive)\n");
     printf("N=%d K=%d max_iter=%d eps=%g\n", N, K, max_iter, eps);
     printf("Iterações: %d | SSE final: %.6f | Tempo: %.1f ms\n", iters, sse, ms);
-    printf("Coeficiente silhouette médio: %.6f\n", silhouette);
+    // printf("Coeficiente silhouette médio: %.6f\n", silhouette);
 
     write_assign_csv(outAssign, assign, N);
     write_centroids_csv(outCentroid, C, K);

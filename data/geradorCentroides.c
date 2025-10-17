@@ -32,7 +32,7 @@ int main(int argc, char **argv){
     /* Pequeno desvio para os centroides iniciais para nao comecarem do mesmo lugar */
     double desvio = 2.0;
 
-    FILE *arquivoC = fopen("centroides_iniciais.csv", "w");
+    FILE *arquivoC = fopen("data/centroides_iniciais.csv", "w");
     if(arquivoC == NULL){
         perror("Erro ao criar o arquivo de centroides!\n");
         return 1;
