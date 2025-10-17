@@ -1,0 +1,201 @@
+=== K-MEANS 1D COMPREHENSIVE TEST RESULTS ===
+Data e hora: Fri Oct 17 12:59:15 PM -03 2025
+========================================
+
+=== INFORMAÇÕES DO SISTEMA ===
+CPU: Intel(R) Core(TM) i9-14900KF
+Cores disponíveis: 32
+Compilador GCC: gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+
+Compilando os códigos...
+Compilação concluída!
+
+========================================
+TESTANDO: 10000 pontos, 4 clusters
+========================================
+Gerando dados: 10000 pontos e 4 centróides iniciais
+
+--- IMPLEMENTAÇÃO SERIAL ---
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 95.3 ms
+Coeficiente silhouette médio: 0.924229
+
+--- IMPLEMENTAÇÃO OPENMP (variando threads) ---
+>> Testando com 4 thread(s):
+OpenMP habilitado com 4 threads configuradas.
+Threads efetivamente utilizadas: 4
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 24.9 ms
+Tempo medido com omp_get_wtime(): 0.024864 segundos
+Coeficiente silhouette médio: 0.924229
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 8 thread(s):
+OpenMP habilitado com 8 threads configuradas.
+Threads efetivamente utilizadas: 8
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 28.1 ms
+Tempo medido com omp_get_wtime(): 0.028138 segundos
+Coeficiente silhouette médio: 0.924229
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 16 thread(s):
+OpenMP habilitado com 16 threads configuradas.
+Threads efetivamente utilizadas: 16
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 15.4 ms
+Tempo medido com omp_get_wtime(): 0.015376 segundos
+Coeficiente silhouette médio: 0.924229
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 32 thread(s):
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 11.7 ms
+Tempo medido com omp_get_wtime(): 0.011676 segundos
+Coeficiente silhouette médio: 0.924229
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 10000/4 concluída!
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters
+========================================
+Gerando dados: 100000 pontos e 8 centróides iniciais
+
+--- IMPLEMENTAÇÃO SERIAL ---
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 16512.6 ms
+Coeficiente silhouette médio: 0.945154
+
+--- IMPLEMENTAÇÃO OPENMP (variando threads) ---
+>> Testando com 4 thread(s):
+OpenMP habilitado com 4 threads configuradas.
+Threads efetivamente utilizadas: 4
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 4171.7 ms
+Tempo medido com omp_get_wtime(): 4.171711 segundos
+Coeficiente silhouette médio: 0.945154
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 8 thread(s):
+OpenMP habilitado com 8 threads configuradas.
+Threads efetivamente utilizadas: 8
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 2115.3 ms
+Tempo medido com omp_get_wtime(): 2.115271 segundos
+Coeficiente silhouette médio: 0.945154
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 16 thread(s):
+OpenMP habilitado com 16 threads configuradas.
+Threads efetivamente utilizadas: 16
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1715.4 ms
+Tempo medido com omp_get_wtime(): 1.715406 segundos
+Coeficiente silhouette médio: 0.945154
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 32 thread(s):
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1355.1 ms
+Tempo medido com omp_get_wtime(): 1.355082 segundos
+Coeficiente silhouette médio: 0.945154
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 100000/8 concluída!
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters
+========================================
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+--- IMPLEMENTAÇÃO SERIAL ---
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638 | Tempo: 2955223.8 ms
+Coeficiente silhouette médio: 0.962777
+
+--- IMPLEMENTAÇÃO OPENMP (variando threads) ---
+>> Testando com 4 thread(s):
+OpenMP habilitado com 4 threads configuradas.
+Threads efetivamente utilizadas: 4
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638 | Tempo: 771009.8 ms
+Tempo medido com omp_get_wtime(): 771.009774 segundos
+Coeficiente silhouette médio: 0.962777
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 8 thread(s):
+OpenMP habilitado com 8 threads configuradas.
+Threads efetivamente utilizadas: 8
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638 | Tempo: 407779.6 ms
+Tempo medido com omp_get_wtime(): 407.779636 segundos
+Coeficiente silhouette médio: 0.962777
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 16 thread(s):
+OpenMP habilitado com 16 threads configuradas.
+Threads efetivamente utilizadas: 16
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638 | Tempo: 373915.5 ms
+Tempo medido com omp_get_wtime(): 373.915550 segundos
+Coeficiente silhouette médio: 0.962777
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 32 thread(s):
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638 | Tempo: 275368.1 ms
+Tempo medido com omp_get_wtime(): 275.368054 segundos
+Coeficiente silhouette médio: 0.962777
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 1000000/16 concluída!
+
+========================================
+RESUMO DOS TESTES
+========================================
+Configurações testadas:
+  - 10000 pontos, 4 clusters
+  - 100000 pontos, 8 clusters
+  - 1000000 pontos, 16 clusters
+
+Threads testadas: 4 8 16 32
+
+Arquivos de saída gerados:
+  - Serial: serial/centroids_*.csv, serial/assign_*.csv
+  - OpenMP: openMP/centroids_*_*t.csv, openMP/assign_*_*t.csv
+
+Teste completo concluído. Resultados salvos em: results/test_results_20251017_125915.txt
