@@ -1,17 +1,39 @@
 #!/bin/bash
 
-echo "Gerando um teste para implementação serial e OpenMP"
+# filepath: /home/luis-menezes/Documents/Grad/2025_PCD/Projeto_PCD/run_tests.sh
 
-echo "Gerando dados e centróides iniciais"
-echo "Gerando 100000 pontos de dados e 8 centróides iniciais"
+# Create results directory if it doesn't exist
+mkdir -p results
+
+# Set output file with timestamp
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+OUTPUT_FILE="results/test_results_${TIMESTAMP}.txt"
+
+echo "Gerando um teste para implementação serial e OpenMP"
+echo "Resultados serão salvos em: $OUTPUT_FILE"
 echo ""
+
+# Function to log to both console and file
+log() {
+    echo "$1" | tee -a "$OUTPUT_FILE"
+}
+
+# Clear/create the output file
+echo "=== K-MEANS 1D TEST RESULTS ===" > "$OUTPUT_FILE"
+echo "Data e hora: $(date)" >> "$OUTPUT_FILE"
+echo "========================================" >> "$OUTPUT_FILE"
+echo "" >> "$OUTPUT_FILE"
+
+log "Gerando dados e centróides iniciais"
+log "Gerando 100000 pontos de dados e 8 centróides iniciais"
+log ""
 
 gcc -std=c99 data/geradorDados.c -o data/geradorDados
 gcc -std=c99 data/geradorCentroides.c -o data/geradorCentroides
 ./data/geradorDados 100000 8
 ./data/geradorCentroides 8
 
-echo "Compilando ambos os códigos"
+log "Compilando ambos os códigos"
 
 # Compile serial version
 gcc -O2 -std=c99 serial/kmeans_1d_serial.c -o serial/kmeans_1d_naive -lm
@@ -19,10 +41,39 @@ gcc -O2 -std=c99 serial/kmeans_1d_serial.c -o serial/kmeans_1d_naive -lm
 # Compile OpenMP version
 gcc -O2 -std=c99 -fopenmp openMP/opMP.c -o openMP/kmeans_omp -lm
 
-echo "Executando ambos os códigos com os mesmos dados de entrada"
-echo "Implementação serial:"
-./serial/kmeans_1d_naive data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/assign.csv serial/centroids.csv
+log "Executando ambos os códigos com os mesmos dados de entrada"
+log ""
+log "=== IMPLEMENTAÇÃO SERIAL ==="
+./serial/kmeans_1d_naive data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/assign.csv serial/centroids.csv 2>&1 | tee -a "$OUTPUT_FILE"
+
+log ""
+log "=== IMPLEMENTAÇÃO OPENMP ==="
+./openMP/kmeans_omp data/dados.csv data/centroides_iniciais.csv 50 0.000001 openMP/assign.csv openMP/centroids.csv 2>&1 | tee -a "$OUTPUT_FILE"
+
+log ""
+log "=== COMPARAÇÃO DE RESULTADOS ==="
+
+# Compare centroid results
+if cmp -s serial/centroids.csv openMP/centroids.csv; then
+    log "✓ Centróides finais são idênticos entre as implementações"
+else
+    log "⚠ Diferenças encontradas nos centróides finais"
+fi
+
+# Compare assignments
+if cmp -s serial/assign.csv openMP/assign.csv; then
+    log "✓ Atribuições são idênticas entre as implementações"
+else
+    log "⚠ Diferenças encontradas nas atribuições"
+fi
+
+log ""
+log "=== INFORMAÇÕES DO SISTEMA ==="
+log "CPU: $(cat /proc/cpuinfo | grep 'model name' | head -1 | cut -d':' -f2 | xargs)"
+log "Cores disponíveis: $(nproc)"
+log "Threads OpenMP utilizadas: ${OMP_NUM_THREADS:-$(nproc)}"
+log ""
+log "Teste concluído. Resultados salvos em: $OUTPUT_FILE"
 
 echo ""
-echo "Implementação OpenMP:"
-./openMP/kmeans_omp data/dados.csv data/centroides_iniciais.csv 50 0.000001 openMP/assign.csv openMP/centroids.csv
+echo "Teste concluído. Resultados salvos em: $OUTPUT_FILE"
