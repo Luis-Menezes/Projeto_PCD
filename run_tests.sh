@@ -9,6 +9,10 @@ mkdir -p results
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 OUTPUT_FILE="results/test_results_${TIMESTAMP}.txt"
 
+N_DATA_POINTS=10000
+K_CENTROIDS=4
+N_THREADS=4
+
 echo "Gerando um teste para implementação serial e OpenMP"
 echo "Resultados serão salvos em: $OUTPUT_FILE"
 echo ""
@@ -25,13 +29,13 @@ echo "========================================" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
 
 log "Gerando dados e centróides iniciais"
-log "Gerando 100000 pontos de dados e 8 centróides iniciais"
+log "Gerando $N_DATA_POINTS pontos de dados e $K_CENTROIDS centróides iniciais"
 log ""
 
 gcc -std=c99 data/geradorDados.c -o data/geradorDados
 gcc -std=c99 data/geradorCentroides.c -o data/geradorCentroides
-./data/geradorDados 100000 8
-./data/geradorCentroides 8
+./data/geradorDados $N_DATA_POINTS $K_CENTROIDS
+./data/geradorCentroides $K_CENTROIDS
 
 log "Compilando ambos os códigos"
 
@@ -44,11 +48,11 @@ gcc -O2 -std=c99 -fopenmp openMP/opMP.c -o openMP/kmeans_omp -lm
 log "Executando ambos os códigos com os mesmos dados de entrada"
 log ""
 log "=== IMPLEMENTAÇÃO SERIAL ==="
-./serial/kmeans_1d_naive data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/assign.csv serial/centroids.csv 2>&1 | tee -a "$OUTPUT_FILE"
+./serial/kmeans_1d_naive data/dados.csv data/centroides_iniciais.csv 50 0.000001 $N_THREADS serial/assign.csv serial/centroids.csv 2>&1 | tee -a "$OUTPUT_FILE"
 
 log ""
 log "=== IMPLEMENTAÇÃO OPENMP ==="
-./openMP/kmeans_omp data/dados.csv data/centroides_iniciais.csv 50 0.000001 openMP/assign.csv openMP/centroids.csv 2>&1 | tee -a "$OUTPUT_FILE"
+./openMP/kmeans_omp data/dados.csv data/centroides_iniciais.csv 50 0.000001 $N_THREADS openMP/assign.csv openMP/centroids.csv 2>&1 | tee -a "$OUTPUT_FILE"
 
 log ""
 log "=== COMPARAÇÃO DE RESULTADOS ==="

@@ -1,0 +1,35 @@
+=== K-MEANS 1D TEST RESULTS ===
+Data e hora: Fri Oct 17 12:24:09 PM -03 2025
+========================================
+
+Gerando dados e centróides iniciais
+Gerando 10000 pontos de dados e 4 centróides iniciais
+
+Compilando ambos os códigos
+Executando ambos os códigos com os mesmos dados de entrada
+
+=== IMPLEMENTAÇÃO SERIAL ===
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 102.9 ms
+Coeficiente silhouette médio: 0.924229
+
+=== IMPLEMENTAÇÃO OPENMP ===
+OpenMP habilitado com 4 threads configuradas.
+Threads efetivamente utilizadas: 4
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 24.8 ms
+Tempo medido com omp_get_wtime(): 0.024809 segundos
+Coeficiente silhouette médio: 0.924229
+
+=== COMPARAÇÃO DE RESULTADOS ===
+✓ Centróides finais são idênticos entre as implementações
+⚠ Diferenças encontradas nas atribuições
+
+=== INFORMAÇÕES DO SISTEMA ===
+CPU: Intel(R) Core(TM) i9-14900KF
+Cores disponíveis: 32
+Threads OpenMP utilizadas: 32
+
+Teste concluído. Resultados salvos em: results/test_results_20251017_122409.txt

@@ -262,13 +262,30 @@ int main(int argc, char **argv){
     const char *pathC = argv[2];
     int max_iter = (argc>3)? atoi(argv[3]) : 50;
     double eps   = (argc>4)? atof(argv[4]) : 1e-4;
-    const char *outAssign   = (argc>5)? argv[5] : NULL;
-    const char *outCentroid = (argc>6)? argv[6] : NULL;
+    int n_threads = (argc>5)? atoi(argv[5]) : 4;
+    const char *outAssign   = (argc>6)? argv[6] : NULL;
+    const char *outCentroid = (argc>7)? argv[7] : NULL;
     double silhouette = 0.0;
     if(max_iter <= 0 || eps <= 0.0){
         fprintf(stderr,"Parâmetros inválidos: max_iter>0 e eps>0\n");
         return 1;
     }
+
+        #ifdef _OPENMP
+    omp_set_num_threads(n_threads); // Define o número de threads para OpenMP
+    printf("OpenMP habilitado com %d threads configuradas.\n", n_threads);
+    
+    // Verificar quantas threads realmente serão usadas
+    int actual_threads;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        actual_threads = omp_get_num_threads();
+    }
+    printf("Threads efetivamente utilizadas: %d\n", actual_threads);
+    #else
+    printf("OpenMP não habilitado. Compilar com -fopenmp para ativar.\n");
+    #endif
 
     int N=0, K=0;
     double *X = read_csv_1col(pathX, &N);
@@ -279,7 +296,7 @@ int main(int argc, char **argv){
     double t0_kmeans = omp_get_wtime();
     int iters = 0; double sse = 0.0;
     kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
-    kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
+    // kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
     silhouette = calculaSilhouette(X, C, assign, N, K);
     double t1_kmeans = omp_get_wtime();
     double ms =  (double)(t1_kmeans - t0_kmeans) * 1000;
