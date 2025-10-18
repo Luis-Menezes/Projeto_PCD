@@ -41,7 +41,7 @@ def plot_speedup(df):
     for (n_pontos, n_centroids), group in df_parallel.groupby(['n_pontos', 'n_centroids']):
         ax1.plot(group['n_threads'], group['speedup'], 
                 marker='o', linewidth=2, markersize=8,
-                label=f'{n_pontos:,} pontos, {n_centroids} clusters')
+                label=f'DBK{int(np.log10(n_pontos)-3)}')
     
     # Linha ideal (speedup linear)
     max_threads = df['n_threads'].max()
@@ -64,7 +64,7 @@ def plot_speedup(df):
     for (n_pontos, n_centroids), group in df_parallel.groupby(['n_pontos', 'n_centroids']):
         ax2.plot(group['n_threads'], group['efficiency'], 
                 marker='s', linewidth=2, markersize=8,
-                label=f'{n_pontos:,} pontos, {n_centroids} clusters')
+                label=f'DBK{int(np.log10(n_pontos)-3)}')
     
     ax2.axhline(y=1.0, color='k', linestyle='--', alpha=0.5, label='Eficiência ideal')
     ax2.set_xlabel('Número de Threads')
@@ -109,7 +109,7 @@ def plot_execution_time(df):
         
         axes[i].set_xlabel('Número de Threads')
         axes[i].set_ylabel('Tempo (ms)')
-        axes[i].set_title(f'Tempo de Execução: {n_pontos:,} pontos, {n_centroids} clusters')
+        axes[i].set_title(f'Tempo de Execução (DBK{int(np.log10(n_pontos)-3)}): {n_pontos:,} pontos, {n_centroids} clusters')
         axes[i].legend()
         axes[i].grid(True, alpha=0.3)
         axes[i].set_xscale('log', base=2)
