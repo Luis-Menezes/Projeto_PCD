@@ -10,12 +10,16 @@ def calculate_speedup(df):
     Calcula o speedup comparando com a versão serial (n_threads=1)
     """
     df_with_speedup = df.copy()
-    df_with_speedup['speedup'] = 1.0  # Inicializa com 1.0
+    df_with_speedup['speedup'] = np.nan  # Inicializa com NaN
     
     # Para cada configuração (n_pontos, n_centroids), calcula o speedup
     for (n_pontos, n_centroids), group in df.groupby(['n_pontos', 'n_centroids']):
         # Encontra o tempo da versão serial (n_threads=1 ou serial_omp=True)
-        serial_time = group[group['n_threads'] == 1]['tempo'].iloc[0]
+        serial_rows = group[group['n_threads'] == 1]
+        if serial_rows.empty:
+            # sem referência serial: deixamos speedup como NaN
+            continue
+        serial_time = serial_rows['tempo'].iloc[0]
         
         # Calcula speedup para todos os casos dessa configuração
         for idx in group.index:
@@ -28,11 +32,11 @@ def plot_speedup(df):
     """
     Plot speedup vs number of threads for different dataset sizes
     """
-    sns.set(style="whitegrid")
+    sns.set_theme(style="whitegrid")
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
     
     # Plot 1: Speedup vs Threads
-    df_parallel = df[df['serial_omp'] == False]  # Apenas versões paralelas
+    df_parallel = df[df['n_threads'] >1]  # Apenas versões paralelas
     
     for (n_pontos, n_centroids), group in df_parallel.groupby(['n_pontos', 'n_centroids']):
         ax1.plot(group['n_threads'], group['speedup'], 
@@ -41,7 +45,8 @@ def plot_speedup(df):
     
     # Linha ideal (speedup linear)
     max_threads = df['n_threads'].max()
-    ax1.plot([1, max_threads], [1, max_threads], 'k--', alpha=0.5, label='Speedup ideal')
+    min_threads = 4
+    ax1.plot([min_threads, max_threads], [min_threads, max_threads], 'k--', alpha=0.5, label='Speedup ideal')
     
     ax1.set_xlabel('Número de Threads')
     ax1.set_ylabel('Speedup')
@@ -50,6 +55,8 @@ def plot_speedup(df):
     ax1.grid(True, alpha=0.3)
     ax1.set_xscale('log', base=2)
     ax1.set_yscale('log', base=2)
+    # ax1.set_ylim(bottom=min_threads)
+    # ax1.set_xlim(left=min_threads)
     
     # Plot 2: Eficiência vs Threads
     df_parallel['efficiency'] = df_parallel['speedup'] / df_parallel['n_threads']
@@ -75,7 +82,7 @@ def plot_execution_time(df):
     """
     Plot execution time comparison
     """
-    sns.set(style="whitegrid")
+    sns.set_theme(style="whitegrid")
     plt.figure(figsize=(12, 8))
     
     # Criar subplot para cada configuração
@@ -89,8 +96,8 @@ def plot_execution_time(df):
         subset = df[(df['n_pontos'] == n_pontos) & (df['n_centroids'] == n_centroids)]
         
         # Separar serial e paralelo
-        serial_data = subset[subset['serial_omp'] == True]
-        parallel_data = subset[subset['serial_omp'] == False]
+        serial_data = subset[subset['n_threads'] == 1]
+        parallel_data = subset[subset['n_threads'] > 1]
         
         # Plot tempo de execução
         if len(serial_data) > 0:
@@ -106,7 +113,7 @@ def plot_execution_time(df):
         axes[i].legend()
         axes[i].grid(True, alpha=0.3)
         axes[i].set_xscale('log', base=2)
-        axes[i].set_yscale('log')
+        # axes[i].set_yscale('log')
     
     plt.tight_layout()
     plt.savefig('results/figures/execution_time.png', dpi=300, bbox_inches='tight')
@@ -122,20 +129,40 @@ def print_speedup_summary(df):
         print(f"Configuração: {n_pontos:,} pontos, {n_centroids} clusters")
         print("-" * 50)
         
-        serial_time = group[group['n_threads'] == 1]['tempo'].iloc[0]
-        print(f"Tempo serial: {serial_time:.1f} ms")
+        serial_rows = group[group['n_threads'] == 1]
+        if not serial_rows.empty:
+            serial_time = serial_rows['tempo'].iloc[0]
+            print(f"Tempo serial: {serial_time:.1f} ms")
+        else:
+            serial_time = None
+            print("Tempo serial: N/A (não encontrado)")
+
+        parallel_group = group[group['n_threads'] > 1]
+        if parallel_group.empty:
+            print("  Nenhuma execução paralela encontrada para esta configuração.\n")
+            continue
         
-        parallel_group = group[group['serial_omp'] == False]
         for _, row in parallel_group.iterrows():
-            speedup = row['speedup']
-            efficiency = speedup / row['n_threads']
+            speedup = row.get('speedup', np.nan)
+            if np.isnan(speedup):
+                efficiency_str = "N/A"
+                speedup_str = "N/A"
+            else:
+                efficiency = speedup / row['n_threads']
+                efficiency_str = f"{efficiency:5.1%}"
+                speedup_str = f"{speedup:5.2f}x"
             print(f"  {row['n_threads']:2d} threads: {row['tempo']:8.1f} ms | "
-                  f"Speedup: {speedup:5.2f}x | Eficiência: {efficiency:5.1%}")
+                  f"Speedup: {speedup_str} | Eficiência: {efficiency_str}")
         
-        best_speedup = parallel_group['speedup'].max()
-        best_threads = parallel_group.loc[parallel_group['speedup'].idxmax(), 'n_threads']
-        print(f"  Melhor speedup: {best_speedup:.2f}x com {best_threads} threads")
-        print()
+        # Melhor speedup (somente se houver valores válidos)
+        if parallel_group['speedup'].dropna().empty:
+            print("  Melhor speedup: N/A (sem speedup válido)\n")
+        else:
+            best_idx = parallel_group['speedup'].idxmax()
+            best_speedup = parallel_group.loc[best_idx, 'speedup']
+            best_threads = parallel_group.loc[best_idx, 'n_threads']
+            print(f"  Melhor speedup: {best_speedup:.2f}x com {best_threads} threads\n")
+
 
 if __name__ == "__main__":
     # Lê os dados
