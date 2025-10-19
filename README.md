@@ -4,8 +4,8 @@ Este repositório consiste no projeto final da disciplina de Programação Conco
 
 ## Alunos:
 
-Isabella Mariana Cardoso Pinto - RA: 164915 - Integral
-Luis Filipe Carvalho de Menezes - RA: 164924 - Noturno
+- Isabella Mariana Cardoso Pinto - RA: 164915 - Integral
+- Luis Filipe Carvalho de Menezes - RA: 164924 - Noturno
 
 ## Arquitetura do projeto:
 
