@@ -3,6 +3,7 @@
 *.out
 *.exe
 .vscode/
+/openMP/*.csv
 serial/kmeans_1d_naive 
 # Executável do kmeans 1D serial
 

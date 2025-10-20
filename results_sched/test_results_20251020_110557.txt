@@ -1,0 +1,102 @@
+=== K-MEANS 1D SCHEDULE TEST RESULTS ===
+Data e hora: Mon Oct 20 11:05:57 AM -03 2025
+========================================
+
+Gerando dados: 100000 pontos e 8 centróides iniciais
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: static, Threads: 32 Chunk Sizes: 0
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 0 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1322.4 ms
+Tempo medido com omp_get_wtime(): 1.322387 segundos
+Coeficiente silhouette médio: 0.945154
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: static, Threads: 32 Chunk Sizes: 10
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 10 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1313.2 ms
+Tempo medido com omp_get_wtime(): 1.313164 segundos
+Coeficiente silhouette médio: 0.945154
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: static, Threads: 32 Chunk Sizes: 100
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 100 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1316.0 ms
+Tempo medido com omp_get_wtime(): 1.315983 segundos
+Coeficiente silhouette médio: 0.945154
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: static, Threads: 32 Chunk Sizes: 1000
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 1000 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1317.1 ms
+Tempo medido com omp_get_wtime(): 1.317090 segundos
+Coeficiente silhouette médio: 0.945154
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 0
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 0 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1322.5 ms
+Tempo medido com omp_get_wtime(): 1.322520 segundos
+Coeficiente silhouette médio: 0.945154
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 10
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 10 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1285.6 ms
+Tempo medido com omp_get_wtime(): 1.285602 segundos
+Coeficiente silhouette médio: 0.945154
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 100
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 100 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1309.6 ms
+Tempo medido com omp_get_wtime(): 1.309551 segundos
+Coeficiente silhouette médio: 0.945154
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 1000
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 1000 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 1316.5 ms
+Tempo medido com omp_get_wtime(): 1.316458 segundos
+Coeficiente silhouette médio: 0.945154
+

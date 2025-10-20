@@ -2,7 +2,7 @@
 
 # filepath: /home/luis-menezes/Documents/Grad/2025_PCD/Projeto_PCD/run_tests.sh
 
-# Create results directory if it doesn't exist
+# Run execution and speedup tests for serial and OpenMP implementations
 mkdir -p results
 
 # Set output file with timestamp
@@ -17,7 +17,7 @@ CONFIGS=(
 )
 
 # Thread counts to test
-THREAD_COUNTS=(4 8 16 32)
+THREAD_COUNTS=(1 2)
 
 echo "Executando testes completos para implementação serial e OpenMP"
 echo "Resultados serão salvos em: $OUTPUT_FILE"
@@ -64,9 +64,9 @@ for config in "${CONFIGS[@]}"; do
     log ""
     
     # Test serial version (only once per dataset)
-    log "--- IMPLEMENTAÇÃO SERIAL ---"
-    ./serial/kmeans_1d_naive data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/assign_${N_DATA_POINTS}.csv serial/centroids_${N_DATA_POINTS}.csv 2>&1 | tee -a "$OUTPUT_FILE"
-    log ""
+    # log "--- IMPLEMENTAÇÃO SERIAL ---"
+    # ./serial/kmeans_1d_naive data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/assign_${N_DATA_POINTS}.csv serial/centroids_${N_DATA_POINTS}.csv 2>&1 | tee -a "$OUTPUT_FILE"
+    # log ""
     
     # Test OpenMP with different thread counts
     log "--- IMPLEMENTAÇÃO OPENMP (variando threads) ---"

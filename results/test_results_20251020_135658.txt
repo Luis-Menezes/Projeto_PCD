@@ -1,0 +1,117 @@
+=== K-MEANS 1D COMPREHENSIVE TEST RESULTS ===
+Data e hora: Mon Oct 20 01:56:58 PM -03 2025
+========================================
+
+=== INFORMAÇÕES DO SISTEMA ===
+CPU: Intel(R) Core(TM) i9-14900KF
+Cores disponíveis: 32
+Compilador GCC: gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+
+Compilando os códigos...
+Compilação concluída!
+
+========================================
+TESTANDO: 10000 pontos, 4 clusters
+========================================
+Gerando dados: 10000 pontos e 4 centróides iniciais
+
+--- IMPLEMENTAÇÃO OPENMP (variando threads) ---
+>> Testando com 1 thread(s):
+OpenMP habilitado com 1 threads configuradas.
+Threads efetivamente utilizadas: 1
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 99.9 ms
+Tempo medido com omp_get_wtime(): 0.099875 segundos
+Coeficiente silhouette médio: 0.924229
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 2 thread(s):
+OpenMP habilitado com 2 threads configuradas.
+Threads efetivamente utilizadas: 2
+K-means 1D (naive)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605 | Tempo: 52.9 ms
+Tempo medido com omp_get_wtime(): 0.052914 segundos
+Coeficiente silhouette médio: 0.924229
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 10000/4 concluída!
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters
+========================================
+Gerando dados: 100000 pontos e 8 centróides iniciais
+
+--- IMPLEMENTAÇÃO OPENMP (variando threads) ---
+>> Testando com 1 thread(s):
+OpenMP habilitado com 1 threads configuradas.
+Threads efetivamente utilizadas: 1
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 16410.3 ms
+Tempo medido com omp_get_wtime(): 16.410259 segundos
+Coeficiente silhouette médio: 0.945154
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 2 thread(s):
+OpenMP habilitado com 2 threads configuradas.
+Threads efetivamente utilizadas: 2
+K-means 1D (naive)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443 | Tempo: 8348.8 ms
+Tempo medido com omp_get_wtime(): 8.348830 segundos
+Coeficiente silhouette médio: 0.945154
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 100000/8 concluída!
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters
+========================================
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+--- IMPLEMENTAÇÃO OPENMP (variando threads) ---
+>> Testando com 1 thread(s):
+OpenMP habilitado com 1 threads configuradas.
+Threads efetivamente utilizadas: 1
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638 | Tempo: 3023151.2 ms
+Tempo medido com omp_get_wtime(): 3023.151243 segundos
+Coeficiente silhouette médio: 0.962777
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+>> Testando com 2 thread(s):
+OpenMP habilitado com 2 threads configuradas.
+Threads efetivamente utilizadas: 2
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638 | Tempo: 1548262.3 ms
+Tempo medido com omp_get_wtime(): 1548.262317 segundos
+Coeficiente silhouette médio: 0.962777
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 1000000/16 concluída!
+
+========================================
+RESUMO DOS TESTES
+========================================
+Configurações testadas:
+  - 10000 pontos, 4 clusters
+  - 100000 pontos, 8 clusters
+  - 1000000 pontos, 16 clusters
+
+Threads testadas: 1 2
+
+Arquivos de saída gerados:
+  - Serial: serial/centroids_*.csv, serial/assign_*.csv
+  - OpenMP: openMP/centroids_*_*t.csv, openMP/assign_*_*t.csv
+
+Teste completo concluído. Resultados salvos em: results/test_results_20251020_135658.txt
