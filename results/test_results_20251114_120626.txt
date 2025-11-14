@@ -1,0 +1,92 @@
+=== K-MEANS 1D COMPREHENSIVE TEST RESULTS ===
+Data e hora: Fri Nov 14 12:06:26 PM -03 2025
+========================================
+
+=== INFORMAÇÕES DO SISTEMA ===
+CPU: Intel(R) Core(TM) i9-14900KF
+Cores disponíveis: 32
+Compilador GCC: gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+
+Compilando os códigos...
+Compilação concluída!
+
+========================================
+TESTANDO: 10000 pontos, 4 clusters
+========================================
+Gerando dados: 10000 pontos e 4 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=10000 K=4 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 84195.049605
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.0 ms
+  Tempo Kernel (GPU):   25.6 ms
+  Tempo D2H (cópias A): 0.1 ms
+  Tempo Total K-means:  25.8 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 9.1 ms
+Coeficiente silhouette médio: 0.924229
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 10000/4 concluída!
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters
+========================================
+Gerando dados: 100000 pontos e 8 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=100000 K=8 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 834307.525443
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.0 ms
+  Tempo Kernel (GPU):   0.2 ms
+  Tempo D2H (cópias A): 0.8 ms
+  Tempo Total K-means:  1.5 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 1261.6 ms
+Coeficiente silhouette médio: 0.945154
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 100000/8 concluída!
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters
+========================================
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=1000000 K=16 max_iter=50 eps=1e-06
+Iterações: 3 | SSE final: 8332982.024638
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.0 ms
+  Tempo Kernel (GPU):   1.4 ms
+  Tempo D2H (cópias A): 5.8 ms
+  Tempo Total K-means:  11.6 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 255282.0 ms
+Coeficiente silhouette médio: 0.962777
+   ✓ Centróides idênticos à versão serial
+   ✓ Atribuições idênticas à versão serial
+
+Configuração 1000000/16 concluída!
+
+========================================
+RESUMO DOS TESTES
+========================================
+Configurações testadas:
+  - 10000 pontos, 4 clusters
+  - 100000 pontos, 8 clusters
+  - 1000000 pontos, 16 clusters
+
+
+Arquivos de saída gerados:
+  - Serial: serial/centroids_*.csv, serial/assign_*.csv
+  - CUDA: cuda/centroids_*.csv, cuda/assign_*.csv
+
+Teste completo concluído. Resultados salvos em: results/test_results_20251114_120626.txt
