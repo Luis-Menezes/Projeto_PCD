@@ -78,23 +78,23 @@ static void write_centroids_csv(const char *path, const double *C, int K){
 }
 
 /* ---------- KERNEL CUDA (DEVICE) ---------- */
-/* Kernel de Assignment: 1 thread por ponto i [cite: 1553] */
+/* Kernel de Assignment: 1 thread por ponto i */
 __global__ void assignment_kernel(const double *X, const double *C, int *assign,
                                   double *sse_per_point, int N, int K) 
 {
     // 1. Descobrir qual ponto (i) este thread deve processar
     int i = blockIdx.x * blockDim.x + threadIdx.x;
  
-    // 2. Garantir que o thread não está fora dos limites (importante!)
+    // 2. Garantir que o thread não está fora dos limites
     if (i < N) {
-        // 3. Lógica do K-means (copiada da função serial!)
+        // 3. Lógica do K-means (copiada da função serial)
         int best_c = -1;
         double best_dist = 1e300;
  
-        // Cada thread varre K centróides [cite: 1554]
+        // Cada thread varre K centróides
         for (int c = 0; c < K; c++) {
             double diff = X[i] - C[c];
-            double dist = diff * diff; // d = (X[i]-C[c])^2 [cite: 1554]
+            double dist = diff * diff; 
             if (dist < best_dist) {
                 best_dist = dist;
                 best_c = c;
@@ -102,8 +102,8 @@ __global__ void assignment_kernel(const double *X, const double *C, int *assign,
         }
  
         // 4. Escrever resultados na memória global da GPU
-        assign[i] = best_c;       // [cite: 1554]
-        sse_per_point[i] = best_dist; // Para reduzir o SSE no host [cite: 1556]
+        assign[i] = best_c;     
+        sse_per_point[i] = best_dist; // Para reduzir o SSE no host 
     }
 }
 
@@ -225,7 +225,7 @@ static double calculaSilhouette_cuda(
     // 4. Copiar os scores individuais de volta para a CPU
     cudaMemcpy(scores_h, scores_d, (size_t)N * sizeof(double), cudaMemcpyDeviceToHost);
 
-    // 5. Fazer a redução final (soma) na CPU (isso é rápido, O(N))
+    // 5. Fazer a redução final (soma) na CPU
     //    Podemos usar OpenMP aqui para acelerar ainda mais.
     double silhouette_sum = 0.0;
     #pragma omp parallel for reduction(+:silhouette_sum)
@@ -281,7 +281,7 @@ static void kmeans_1d(
         cudaEventElapsedTime(&ms, start, stop);
         *h2d_ms_out += ms;
 
-        // 2. Chamar o Kernel! (Execução na GPU)
+        // 2. Chamar o Kernel (Execução na GPU)
         cudaEventRecord(start);
         assignment_kernel<<<numBlocks, threadsPerBlock>>>(
             X_d, C_d, assign_d, sse_per_point_d, N, K
@@ -300,10 +300,8 @@ static void kmeans_1d(
         cudaEventElapsedTime(&ms, start, stop);
         *d2h_ms_out += ms;
 
-        // 4. Reduzir o SSE no Host (CPU) [cite: 1556]
+        // 4. Reduzir o SSE no Host (CPU)
         sse = 0.0;
-        // (Podemos usar OpenMP aqui, pois já estamos no host)
-        // #pragma omp parallel for reduction(+:sse)
         for(int i = 0; i < N; i++) {
             sse += sse_per_point_h[i];
         }
@@ -362,7 +360,7 @@ int main(int argc, char **argv){
     // --- 2. Alocação de Memória no Device (GPU) ---
     double *X_d, *C_d, *sse_per_point_d;
     int *assign_d;
-    // NOVO: Buffer Device para scores do Silhouette
+    // Buffer Device para scores do Silhouette
     double *silhouette_scores_d; 
     
     cudaMalloc((void**)&X_d, (size_t)N * sizeof(double));
@@ -374,9 +372,7 @@ int main(int argc, char **argv){
     // --- 3. Cópia Inicial (H2D) ---
     cudaMemcpy(X_d, X_h, (size_t)N * sizeof(double), cudaMemcpyHostToDevice);
     
-    // --- 4. Execução e Medição do K-means ---
-    // ... (código do kmeans_1d e medição dele, inalterado) ...
-    
+    // --- 4. Execução e Medição do K-means ---    
     int iters = 0; double sse = 0.0;
     float h2d_ms = 0.0, kernel_ms = 0.0, d2h_ms = 0.0, total_kmeans_ms = 0.0;
     
@@ -394,8 +390,7 @@ int main(int argc, char **argv){
     cudaEventElapsedTime(&total_kmeans_ms, start_total, stop_total);
 
     // --- 5. Execução e Medição do Silhouette (na GPU) ---
-    
-    // IMPORTANTE: O kmeans_1d deixa os assignments finais em assign_h.
+    // O kmeans_1d deixa os assignments finais em assign_h.
     // Precisamos copiar a versão final de assign_h para assign_d
     // para que o silhouette_kernel use os dados corretos.
     cudaMemcpy(assign_d, assign_h, (size_t)N * sizeof(int), cudaMemcpyHostToDevice);
