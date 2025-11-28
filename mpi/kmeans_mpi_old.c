@@ -191,45 +191,18 @@ int main(int argc, char **argv){
     MPI_Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&K, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    // int N_local = N / size; // Divisão simplificada (truncada)
+    int N_local = N / size; // Divisão simplificada (truncada)
     
-    // double *X_local = (double*)malloc(N_local * sizeof(double));
-    // int *assign_local = (int*)malloc(N_local * sizeof(int));
-    // if(rank != 0) C = (double*)malloc(K * sizeof(double));
-
-    // --- 3. Distribuição dos Dados (Scatterv - Robusto) ---
-    
-    // Arrays para controlar quantos pontos cada processo recebe
-    int *sendcounts = (int*)malloc(size * sizeof(int));
-    int *displs = (int*)malloc(size * sizeof(int));
-    
-    // Calcula a divisão (alguns processos recebem 1 ponto a mais se houver resto)
-    int remainder = N % size;
-    int sum = 0;
-    for (int i = 0; i < size; i++) {
-        sendcounts[i] = N / size;
-        if (i < remainder) {
-            sendcounts[i]++; // Distribui o resto entre os primeiros processos
-        }
-        displs[i] = sum;
-        sum += sendcounts[i];
-    }
-
-    // O N_local deste processo específico
-    int N_local = sendcounts[rank];
-
-    // Alocação de memória local
     double *X_local = (double*)malloc(N_local * sizeof(double));
     int *assign_local = (int*)malloc(N_local * sizeof(int));
-    
     if(rank != 0) C = (double*)malloc(K * sizeof(double));
 
-    // Scatterv permite tamanhos variáveis
-    MPI_Scatterv(X_full, sendcounts, displs, MPI_DOUBLE, 
-                 X_local, N_local, MPI_DOUBLE, 
-                 0, MPI_COMM_WORLD);
+    // --- 3. Distribuição dos Dados (Scatter) ---
+    MPI_Scatter(X_full, N_local, MPI_DOUBLE, 
+                X_local, N_local, MPI_DOUBLE, 
+                0, MPI_COMM_WORLD);
 
-    MPI_Bcast(C, K, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(C, K, MPI_DOUBLE, 0, MPI_COMM_WORLD); // C inicial para todos
 
     // Parâmetros
     int max_iter = (argc>3)? atoi(argv[3]) : 50;
@@ -246,19 +219,17 @@ int main(int argc, char **argv){
 
     double t_end = MPI_Wtime();
 
-    // --- 5. Recolher Resultados (Gatherv) ---
+    // --- 5. Recolher Resultados (Gather) ---
     int *assign_full = NULL;
     if(rank == 0) assign_full = (int*)malloc(N * sizeof(int));
     
-    // Usa os mesmos arrays sendcounts e displs calculados no início
-    MPI_Gatherv(assign_local, N_local, MPI_INT, 
-                assign_full, sendcounts, displs, MPI_INT, 
-                0, MPI_COMM_WORLD);
+    MPI_Gather(assign_local, N_local, MPI_INT, 
+               assign_full, N_local, MPI_INT, 
+               0, MPI_COMM_WORLD);
 
-    // --- 6. Relatório (Apenas Rank 0) ---
+    // --- 6. Relatório ---
     if(rank == 0){
-        // ... (seu código de print e escrita de arquivo continua igual) ...
-                printf("K-means 1D (MPI Distribuído)\n");
+        printf("K-means 1D (MPI Distribuído)\n");
         printf("N=%d K=%d P=%d processos\n", N, K, size);
         printf("Iterações: %d | SSE final: %.6f\n", iters, sse_final);
         double total_time = t_end - t_start;
@@ -271,21 +242,16 @@ int main(int argc, char **argv){
         const char *outCentroid = (argc>6)? argv[6] : NULL;
         write_assign_csv(outAssign, assign_full, N);
         write_centroids_csv(outCentroid, C, K);
-        
+
         free(X_full);
         free(assign_full);
     }
 
-    // Limpeza extra
-    free(sendcounts);
-    free(displs);
-
-    // Limpeza das memórias LOCAIS (todos os processos devem fazer isso)
+    // Limpeza
     free(X_local);
     free(assign_local);
     free(C);
 
-    // Finalização do MPI
     MPI_Finalize();
     return 0;
 }

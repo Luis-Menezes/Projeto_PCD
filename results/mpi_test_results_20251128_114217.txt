@@ -1,0 +1,181 @@
+=== K-MEANS MPI COMPREHENSIVE TEST RESULTS ===
+Data e hora: Fri Nov 28 11:42:17 AM -03 2025
+========================================
+
+=== INFORMAÇÕES DO SISTEMA ===
+CPU: Intel(R) Core(TM) i9-14900KF
+Cores Físicos: 32
+MPI Compiler: gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+
+Compilando os códigos...
+Compilação concluída!
+
+========================================
+DATASET: 10000 pontos, 4 clusters
+========================================
+>> Gerando dados...
+>> Executando Serial (Gabarito)...
+
+--- MPI com 1 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=1 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total: 0.0001 s
+Tempo Comunicação: 0.0000 s (0.8%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 2 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=2 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total: 0.0002 s
+Tempo Comunicação: 0.0000 s (21.2%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 4 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=4 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total: 0.0001 s
+Tempo Comunicação: 0.0000 s (39.8%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 8 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=8 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total: 0.0001 s
+Tempo Comunicação: 0.0001 s (75.4%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 16 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=16 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total: 0.0001 s
+Tempo Comunicação: 0.0001 s (89.0%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 32 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=32 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total: 0.0009 s
+Tempo Comunicação: 0.0008 s (98.1%)
+   [OK] Centróides conferem com Serial.
+
+Configuração 10000 finalizada.
+
+========================================
+DATASET: 100000 pontos, 8 clusters
+========================================
+>> Gerando dados...
+>> Executando Serial (Gabarito)...
+
+--- MPI com 1 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=1 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total: 0.0015 s
+Tempo Comunicação: 0.0000 s (0.1%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 2 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=2 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total: 0.0008 s
+Tempo Comunicação: 0.0000 s (1.9%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 4 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=4 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total: 0.0004 s
+Tempo Comunicação: 0.0000 s (4.4%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 8 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=8 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total: 0.0008 s
+Tempo Comunicação: 0.0002 s (27.5%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 16 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=16 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total: 0.0006 s
+Tempo Comunicação: 0.0002 s (38.8%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 32 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=32 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total: 0.0004 s
+Tempo Comunicação: 0.0003 s (77.9%)
+   [OK] Centróides conferem com Serial.
+
+Configuração 100000 finalizada.
+
+========================================
+DATASET: 1000000 pontos, 16 clusters
+========================================
+>> Gerando dados...
+>> Executando Serial (Gabarito)...
+
+--- MPI com 1 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=1 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total: 0.0229 s
+Tempo Comunicação: 0.0000 s (0.0%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 2 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=2 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total: 0.0116 s
+Tempo Comunicação: 0.0000 s (0.2%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 4 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=4 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total: 0.0058 s
+Tempo Comunicação: 0.0000 s (0.8%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 8 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=8 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total: 0.0044 s
+Tempo Comunicação: 0.0014 s (32.2%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 16 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=16 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total: 0.0025 s
+Tempo Comunicação: 0.0001 s (3.5%)
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 32 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=32 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total: 0.0030 s
+Tempo Comunicação: 0.0018 s (58.9%)
+   [OK] Centróides conferem com Serial.
+
+Configuração 1000000 finalizada.
+
+Teste completo concluído. Resultados em: results/mpi_test_results_20251128_114217.txt
