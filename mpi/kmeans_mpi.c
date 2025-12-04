@@ -93,6 +93,121 @@ static double assignment_step_local(const double *X_local, const double *C, int 
     return sse_local;
 }
 
+/* ---------- Funções de Silhouette (MPI) ---------- */
+/* Mantivemos a silhouetteSample igual à serial. 
+   Passaremos o vetor 'X_full' (global) para ela, 
+   mas pediremos para ela calcular apenas para o índice 'idx' (global).
+*/
+static double silhouetteSample(const double *X, const double *C, const int *assign, int idx, int N, int K) {
+    int cluster = assign[idx];
+    double a = 0.0; 
+    double b = 1e300; 
+
+    int count_a = 0;
+    for (int j = 0; j < N; j++) {
+        if (j == idx) continue; 
+        if (assign[j] == cluster) {
+            a += fabs(X[idx] - X[j]);
+            count_a++;
+        }
+    }
+    if (count_a > 0) a /= count_a;
+    else return 0.0; 
+
+    for (int c = 0; c < K; c++) {
+        if (c == cluster) continue;
+        
+        double dist_sum = 0.0;
+        int count_b = 0;
+        for (int j = 0; j < N; j++) {
+            if (assign[j] == c) {
+                dist_sum += fabs(X[idx] - X[j]);
+                count_b++;
+            }
+        }
+        
+        if (count_b > 0) {
+            double avg_dist = dist_sum / count_b;
+            if (avg_dist < b) b = avg_dist;
+        }
+    }
+
+    if(b == 1e300) return 0.0; 
+    if (a == b) return 0.0;
+    else return (b - a) / fmax(a, b);
+}
+
+/* Função Wrapper MPI:
+   1. Reconstrói o vetor global (Allgather)
+   2. Calcula Silhouette para a fatia local
+   3. Reduz a soma globalmente
+*/
+static double calculaSilhouette_mpi(const double *X_local, const double *C, const int *assign_local, 
+                                    int N_local, int N_total, int K, int rank, int size) {
+    
+    // --- 1. Preparar arrays de contagem e deslocamento para o Allgatherv ---
+    // (Mesma lógica da main para garantir que os dados se alinhem)
+    int *recvcounts = (int*)malloc(size * sizeof(int));
+    int *displs = (int*)malloc(size * sizeof(int));
+    
+    int remainder = N_total % size;
+    int sum = 0;
+    for (int i = 0; i < size; i++) {
+        recvcounts[i] = N_total / size;
+        if (i < remainder) recvcounts[i]++;
+        displs[i] = sum;
+        sum += recvcounts[i];
+    }
+
+    // --- 2. Alocar memória para os vetores GLOBAIS ---
+    // Cada processo precisa ver o TODO para calcular as distâncias
+    double *X_full = (double*)malloc(N_total * sizeof(double));
+    int *assign_full = (int*)malloc(N_total * sizeof(int));
+
+    if (!X_full || !assign_full) {
+        fprintf(stderr, "Erro de memória no Silhouette MPI (Rank %d)\n", rank);
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+
+    // --- 3. Juntar os dados de todos os processos (Allgatherv) ---
+    // X_local -> X_full (em todos os processos)
+    MPI_Allgatherv(X_local, N_local, MPI_DOUBLE, 
+                   X_full, recvcounts, displs, MPI_DOUBLE, 
+                   MPI_COMM_WORLD);
+
+    // assign_local -> assign_full (em todos os processos)
+    MPI_Allgatherv(assign_local, N_local, MPI_INT, 
+                   assign_full, recvcounts, displs, MPI_INT, 
+                   MPI_COMM_WORLD);
+
+    // --- 4. Cálculo Local ---
+    double local_silhouette_sum = 0.0;
+    
+    // O meu pedaço local começa no índice global 'displs[rank]'
+    int global_start_idx = displs[rank];
+
+    for (int i = 0; i < N_local; i++) {
+        // O ponto local 'i' corresponde ao ponto global 'global_start_idx + i'
+        int global_idx = global_start_idx + i;
+        
+        // Passamos X_full e N_total porque silhouetteSample varre tudo
+        local_silhouette_sum += silhouetteSample(X_full, C, assign_full, global_idx, N_total, K);
+    }
+
+    // --- 5. Redução Global (Soma) ---
+    double global_silhouette_sum = 0.0;
+    MPI_Reduce(&local_silhouette_sum, &global_silhouette_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    // --- 6. Limpeza ---
+    free(recvcounts);
+    free(displs);
+    free(X_full);
+    free(assign_full);
+
+    // Retorna a média (apenas Rank 0 terá o valor correto, outros terão 0 ou lixo da redução)
+    return global_silhouette_sum / N_total;
+}
+
 /* 2. Update Distribuído: Calcula somas locais e faz a Redução Global */
 static void update_step_mpi(const double *X_local, double *C, const int *assign_local, int N_local, int K, double *comm_time_out){
     
@@ -191,14 +306,7 @@ int main(int argc, char **argv){
     MPI_Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&K, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    // int N_local = N / size; // Divisão simplificada (truncada)
-    
-    // double *X_local = (double*)malloc(N_local * sizeof(double));
-    // int *assign_local = (int*)malloc(N_local * sizeof(int));
-    // if(rank != 0) C = (double*)malloc(K * sizeof(double));
-
     // --- 3. Distribuição dos Dados (Scatterv - Robusto) ---
-    
     // Arrays para controlar quantos pontos cada processo recebe
     int *sendcounts = (int*)malloc(size * sizeof(int));
     int *displs = (int*)malloc(size * sizeof(int));
@@ -235,7 +343,7 @@ int main(int argc, char **argv){
     int max_iter = (argc>3)? atoi(argv[3]) : 50;
     double eps   = (argc>4)? atof(argv[4]) : 1e-4;
 
-    // --- 4. Execução do K-means ---
+    // --- 4. Execução do K-means (TODOS participam) ---
     double t_start = MPI_Wtime();
     int iters = 0;
     double sse_final = 0.0;
@@ -246,7 +354,14 @@ int main(int argc, char **argv){
 
     double t_end = MPI_Wtime();
 
-    // --- 5. Recolher Resultados (Gatherv) ---
+    // --- 5. Execução do Silhouette (TODOS participam) ---
+    // Importante: Silhouette precisa ser chamado por todos, pois usa Allgatherv
+    double t_sil_start = MPI_Wtime();
+    double silhouette = calculaSilhouette_mpi(X_local, C, assign_local, 
+                                              N_local, N, K, rank, size);
+    double t_sil_end = MPI_Wtime();
+
+    // --- 6. Recolher Resultados (Gatherv) ---
     int *assign_full = NULL;
     if(rank == 0) assign_full = (int*)malloc(N * sizeof(int));
     
@@ -255,16 +370,19 @@ int main(int argc, char **argv){
                 assign_full, sendcounts, displs, MPI_INT, 
                 0, MPI_COMM_WORLD);
 
-    // --- 6. Relatório (Apenas Rank 0) ---
+    // --- 7. Relatório (Apenas Rank 0) ---
     if(rank == 0){
-        // ... (seu código de print e escrita de arquivo continua igual) ...
-                printf("K-means 1D (MPI Distribuído)\n");
+        printf("K-means 1D (MPI Distribuído)\n");
         printf("N=%d K=%d P=%d processos\n", N, K, size);
         printf("Iterações: %d | SSE final: %.6f\n", iters, sse_final);
+        
         double total_time = t_end - t_start;
-        printf("Tempo Total: %.4f s\n", total_time);
-        printf("Tempo Comunicação: %.4f s (%.1f%%)\n", 
+        printf("Tempo Total K-means: %.4f s\n", total_time);
+        printf("Tempo Comunicação (Allreduce): %.4f s (%.1f%%)\n", 
                comm_time, (comm_time/total_time)*100.0);
+        
+        printf("Tempo Silhouette: %.4f s\n", t_sil_end - t_sil_start);
+        printf("Coeficiente silhouette médio: %.6f\n", silhouette);
 
         // Salvar
         const char *outAssign = (argc>5)? argv[5] : NULL;
