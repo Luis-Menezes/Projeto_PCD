@@ -76,7 +76,7 @@ for config in "${CONFIGS[@]}"; do
     
     # 1. Executa Serial (Base para comparação)
     log ">> Executando Serial (Gabarito)..."
-    ./serial/kmeans_serial data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/output/assign_serial.csv serial/output/centroids_serial.csv > /dev/null
+    # ./serial/kmeans_serial data/dados.csv data/centroides_iniciais.csv 50 0.000001 serial/output/assign_serial.csv serial/output/centroids_serial.csv > /dev/null
     
     log ""
     

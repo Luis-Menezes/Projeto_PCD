@@ -1,0 +1,217 @@
+=== K-MEANS MPI COMPREHENSIVE TEST RESULTS ===
+Data e hora: Thu Dec  4 02:14:53 PM -03 2025
+========================================
+
+=== INFORMAÇÕES DO SISTEMA ===
+CPU: Intel(R) Core(TM) i9-14900KF
+Cores Físicos: 32
+MPI Compiler: gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+
+Compilando os códigos...
+Compilação concluída!
+
+========================================
+DATASET: 10000 pontos, 4 clusters
+========================================
+>> Gerando dados...
+>> Executando Serial (Gabarito)...
+
+--- MPI com 1 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=1 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total K-means: 0.0004 s
+Tempo Comunicação (Allreduce): 0.0000 s (0.9%)
+Tempo Silhouette: 0.1045 s
+Coeficiente silhouette médio: 0.924229
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 2 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=2 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total K-means: 0.0004 s
+Tempo Comunicação (Allreduce): 0.0001 s (24.1%)
+Tempo Silhouette: 0.0556 s
+Coeficiente silhouette médio: 0.924229
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 4 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=4 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total K-means: 0.0001 s
+Tempo Comunicação (Allreduce): 0.0000 s (28.8%)
+Tempo Silhouette: 0.0269 s
+Coeficiente silhouette médio: 0.924229
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 8 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=8 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total K-means: 0.0002 s
+Tempo Comunicação (Allreduce): 0.0002 s (82.6%)
+Tempo Silhouette: 0.0297 s
+Coeficiente silhouette médio: 0.924229
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 16 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=16 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total K-means: 0.0003 s
+Tempo Comunicação (Allreduce): 0.0003 s (90.3%)
+Tempo Silhouette: 0.0179 s
+Coeficiente silhouette médio: 0.924229
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 32 processos ---
+K-means 1D (MPI Distribuído)
+N=10000 K=4 P=32 processos
+Iterações: 3 | SSE final: 84195.049605
+Tempo Total K-means: 0.0005 s
+Tempo Comunicação (Allreduce): 0.0005 s (96.3%)
+Tempo Silhouette: 0.0213 s
+Coeficiente silhouette médio: 0.924229
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+Configuração 10000 finalizada.
+
+========================================
+DATASET: 100000 pontos, 8 clusters
+========================================
+>> Gerando dados...
+>> Executando Serial (Gabarito)...
+
+--- MPI com 1 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=1 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total K-means: 0.0014 s
+Tempo Comunicação (Allreduce): 0.0000 s (0.1%)
+Tempo Silhouette: 16.8051 s
+Coeficiente silhouette médio: 0.945154
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 2 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=2 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total K-means: 0.0007 s
+Tempo Comunicação (Allreduce): 0.0000 s (1.5%)
+Tempo Silhouette: 8.3425 s
+Coeficiente silhouette médio: 0.945154
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 4 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=4 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total K-means: 0.0004 s
+Tempo Comunicação (Allreduce): 0.0000 s (3.6%)
+Tempo Silhouette: 4.1911 s
+Coeficiente silhouette médio: 0.945154
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 8 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=8 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total K-means: 0.0003 s
+Tempo Comunicação (Allreduce): 0.0001 s (33.9%)
+Tempo Silhouette: 2.1245 s
+Coeficiente silhouette médio: 0.945154
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 16 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=16 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total K-means: 0.0002 s
+Tempo Comunicação (Allreduce): 0.0001 s (28.8%)
+Tempo Silhouette: 2.6050 s
+Coeficiente silhouette médio: 0.945154
+   [OK] Centróides conferem com Serial.
+
+--- MPI com 32 processos ---
+K-means 1D (MPI Distribuído)
+N=100000 K=8 P=32 processos
+Iterações: 3 | SSE final: 834307.525443
+Tempo Total K-means: 0.0006 s
+Tempo Comunicação (Allreduce): 0.0004 s (72.3%)
+Tempo Silhouette: 1.6821 s
+Coeficiente silhouette médio: 0.945154
+   [OK] Centróides conferem com Serial.
+
+Configuração 100000 finalizada.
+
+========================================
+DATASET: 1000000 pontos, 16 clusters
+========================================
+>> Gerando dados...
+>> Executando Serial (Gabarito)...
+
+--- MPI com 1 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=1 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total K-means: 0.0227 s
+Tempo Comunicação (Allreduce): 0.0000 s (0.0%)
+Tempo Silhouette: 3132.3590 s
+Coeficiente silhouette médio: 0.962777
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 2 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=2 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total K-means: 0.0116 s
+Tempo Comunicação (Allreduce): 0.0001 s (1.0%)
+Tempo Silhouette: 1601.0024 s
+Coeficiente silhouette médio: 0.962777
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 4 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=4 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total K-means: 0.0057 s
+Tempo Comunicação (Allreduce): 0.0001 s (2.4%)
+Tempo Silhouette: 811.3318 s
+Coeficiente silhouette médio: 0.962777
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 8 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=8 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total K-means: 0.0034 s
+Tempo Comunicação (Allreduce): 0.0004 s (12.4%)
+Tempo Silhouette: 453.8107 s
+Coeficiente silhouette médio: 0.962777
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 16 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=16 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total K-means: 0.0024 s
+Tempo Comunicação (Allreduce): 0.0010 s (39.8%)
+Tempo Silhouette: 687.0907 s
+Coeficiente silhouette médio: 0.962777
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+--- MPI com 32 processos ---
+K-means 1D (MPI Distribuído)
+N=1000000 K=16 P=32 processos
+Iterações: 3 | SSE final: 8332982.024638
+Tempo Total K-means: 0.0026 s
+Tempo Comunicação (Allreduce): 0.0014 s (54.0%)
+Tempo Silhouette: 840.1551 s
+Coeficiente silhouette médio: 0.962777
+   [FAIL] Centróides DIFEREM da versão Serial.
+
+Configuração 1000000 finalizada.
+
+Teste completo concluído. Resultados em: results/mpi_test_results_20251204_141453.txt
