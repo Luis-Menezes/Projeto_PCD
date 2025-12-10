@@ -61,7 +61,7 @@ for schedule in "${SCHEDULE_TYPES[@]}"; do
 
                 log "Executando k-means OpenMP com agendamento $schedule, chunk size de $chunk_size e $threads threads..."
 
-                ./openMP/kmeans_omp data/dados.csv data/centroides_iniciais.csv 50 0.000001 $threads $chunk_size openMP/assign_${N_DATA_POINTS}_${threads}t.csv openMP/centroids_${N_DATA_POINTS}_${threads}t.csv 2>&1 | tee -a "$OUTPUT_FILE"
+                ./openMP/kmeans_omp_sched data/dados.csv data/centroides_iniciais.csv 50 0.000001 $threads $chunk_size openMP/assign_${N_DATA_POINTS}_${threads}t.csv openMP/centroids_${N_DATA_POINTS}_${threads}t.csv 2>&1 | tee -a "$OUTPUT_FILE"
 
 
                 # log "Resultado da execução:"

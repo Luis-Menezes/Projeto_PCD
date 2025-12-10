@@ -432,15 +432,19 @@ int main(int argc, char **argv){
     int iters = 0; double sse = 0.0;
     kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse, schedule_type, chunk_size);
     // kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
-    silhouette = calculaSilhouette(X, C, assign, N, K, schedule_type, chunk_size);
     double t1_kmeans = omp_get_wtime();
     double ms =  (double)(t1_kmeans - t0_kmeans) * 1000;
+    
+    double t0_silhouette = omp_get_wtime();
+    silhouette = calculaSilhouette(X, C, assign, N, K, schedule_type, chunk_size);
+    double t1_silhouette = omp_get_wtime();
+    double sil_ms =  (double)(t1_silhouette - t0_silhouette) * 1000;
 
     printf("K-means 1D (naive)\n");
     printf("N=%d K=%d max_iter=%d eps=%g\n", N, K, max_iter, eps);
     printf("Iterações: %d | SSE final: %.6f | Tempo: %.1f ms\n", iters, sse, ms);
     printf("Tempo medido com omp_get_wtime(): %.6f segundos\n", t1_kmeans - t0_kmeans);
-    printf("Coeficiente silhouette médio: %.6f\n", silhouette);
+    printf("Coeficiente silhouette médio: %.3f | Tempo: %.1f ms\n", silhouette, sil_ms);
 
     write_assign_csv(outAssign, assign, N);
     write_centroids_csv(outCentroid, C, K);

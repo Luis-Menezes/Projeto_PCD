@@ -1,0 +1,10 @@
+=== K-MEANS 1D SCHEDULE TEST RESULTS ===
+Data e hora: Wed Dec 10 04:02:56 PM -03 2025
+========================================
+
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: static, Threads: 32 Chunk Sizes: 0
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 0 e 32 threads...

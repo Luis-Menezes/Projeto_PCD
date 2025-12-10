@@ -214,14 +214,18 @@ int main(int argc, char **argv){
     clock_t t0 = clock();
     int iters = 0; double sse = 0.0;
     kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
-    silhouette = calculaSilhouette(X, C, assign, N, K);
     clock_t t1 = clock();
-    double ms = 1000.0 * (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+    double kmeans_ms = 1000.0 * (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+    
+    t0 = clock();
+    silhouette = calculaSilhouette(X, C, assign, N, K);
+    t1 = clock();
+    double sil_ms = 1000.0 * (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
 
     printf("K-means 1D (naive)\n");
     printf("N=%d K=%d max_iter=%d eps=%g\n", N, K, max_iter, eps);
-    printf("Iterações: %d | SSE final: %.6f | Tempo: %.1f ms\n", iters, sse, ms);
-    printf("Coeficiente silhouette médio: %.6f\n", silhouette);
+    printf("Iterações: %d | SSE final: %.6f | Tempo: %.1f ms\n", iters, sse, kmeans_ms);
+    printf("Coeficiente silhouette médio: %.3f | Tempo: %.1f ms\n", silhouette, sil_ms);
 
     write_assign_csv(outAssign, assign, N);
     write_centroids_csv(outCentroid, C, K);

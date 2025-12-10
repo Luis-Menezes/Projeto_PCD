@@ -103,7 +103,7 @@ static double assignment_step_1d(const double *X, const double *C, int *assign, 
 }
 
 static double silhouetteSample(const double *X, const double *C, const int *assign, int idx, int N, int K) {
-    /* Não paraleliza porque é senão vai ser só serializado */
+    /* Não paraleliza porque senão vai ser só serializado -> aumenta muito a granularidade (invés de 32 threads vai gerar 32**2 threads)*/
     int cluster = assign[idx];
     double a = 0.0; // média da distância intra-cluster
     double b = 1e300; // mínima média da distância ao outro cluster
@@ -155,36 +155,7 @@ static double calculaSilhouette(const double *X, const double *C, const int *ass
     return silhouette_sum / N;
 }
 
-/* update: média dos pontos de cada cluster (1D)
-   se cluster vazio, copia X[0] (estratégia naive) */
-/* AQUI PARALELIZA DE DUAS FORMAS DIFERENTES */
 
-/* com base nos docs da atividade - OPCAO A */
-/*static void update_step_1d_critical(const double *X, double *C, const int *assign, int N, int K){
-    double *sum = (double*)calloc((size_t)K, sizeof(double));
-    int *cnt = (int*)calloc((size_t)K, sizeof(int));
-    if(!sum || !cnt){ fprintf(stderr,"Sem memoria no update\n"); exit(1); }
-
-    #pragma omp parallel for
-    for(int i=0; i<N; i++){
-        int a = assign[i];
-        // A seção crítica garante que apenas um thread por vez execute
-        // estas duas linhas, evitando a condição de corrida.
-        #pragma omp critical
-        {
-            cnt[a] += 1;
-            sum[a] += X[i];
-        }
-    }
-    
-    // O cálculo final dos centróides é feito de forma serial
-    for(int c=0; c<K; c++){
-        if(cnt[c] > 0) C[c] = sum[c] / (double)cnt[c];
-        else           C[c] = X[0];
-    }
-    free(sum); free(cnt);
-}
-*/
 
 /* com base nos docs da atividade - OPCAO B */
 static void update_step_1d_local_accum(const double *X, double *C, const int *assign, int N, int K){
@@ -297,15 +268,19 @@ int main(int argc, char **argv){
     int iters = 0; double sse = 0.0;
     kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
     // kmeans_1d(X, C, assign, N, K, max_iter, eps, &iters, &sse);
-    silhouette = calculaSilhouette(X, C, assign, N, K);
     double t1_kmeans = omp_get_wtime();
-    double ms =  (double)(t1_kmeans - t0_kmeans) * 1000;
+    double kmeans_ms =  (double)(t1_kmeans - t0_kmeans) * 1000;
+    
+    double t0_silhouette = omp_get_wtime();
+    silhouette = calculaSilhouette(X, C, assign, N, K);
+    double t1_silhouette = omp_get_wtime();
+    double sil_ms =  (double)(t1_silhouette - t0_silhouette) * 1000;
 
     printf("K-means 1D (naive)\n");
     printf("N=%d K=%d max_iter=%d eps=%g\n", N, K, max_iter, eps);
-    printf("Iterações: %d | SSE final: %.6f | Tempo: %.1f ms\n", iters, sse, ms);
-    printf("Tempo medido com omp_get_wtime(): %.6f segundos\n", t1_kmeans - t0_kmeans);
-    printf("Coeficiente silhouette médio: %.6f\n", silhouette);
+    printf("Iterações: %d | SSE final: %.6f | Tempo: %.1f ms\n", iters, sse, kmeans_ms);
+    // printf("Tempo medido com omp_get_wtime(): %.3f segundos\n", kmeans_ms / 1000.0);
+    printf("Coeficiente silhouette médio: %.3f | Tempo: %.1f ms\n", silhouette, sil_ms);
 
     write_assign_csv(outAssign, assign, N);
     write_centroids_csv(outCentroid, C, K);

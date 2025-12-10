@@ -1,0 +1,203 @@
+=== K-MEANS 1D COMPREHENSIVE TEST RESULTS ===
+Data e hora: Wed Dec 10 05:02:24 PM -03 2025
+========================================
+
+=== INFORMAÇÕES DO SISTEMA ===
+CPU: Intel(R) Core(TM) i9-14900KF
+Cores disponíveis: 32
+Compilador GCC: gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+
+Compilando os códigos...
+Compilação concluída!
+
+========================================
+TESTANDO: 10000 pontos, 4 clusters
+========================================
+Gerando dados: 10000 pontos e 4 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=10000 K=4 max_iter=50 eps=1e-06 threadsPerBlock=128
+Iterações: 8 | SSE final: 1347106.704014
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.0 ms
+  Tempo Kernel (GPU):   4.8 ms
+  Tempo D2H (cópias A): 0.3 ms
+  Tempo Total K-means:  5.5 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 8.2 ms
+Coeficiente silhouette médio: 0.669190
+Configuração 10000/4 concluída!
+
+========================================
+TESTANDO: 10000 pontos, 4 clusters
+========================================
+Gerando dados: 10000 pontos e 4 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=10000 K=4 max_iter=50 eps=1e-06 threadsPerBlock=256
+Iterações: 8 | SSE final: 1347106.704014
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.0 ms
+  Tempo Kernel (GPU):   0.2 ms
+  Tempo D2H (cópias A): 0.3 ms
+  Tempo Total K-means:  0.7 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 8.2 ms
+Coeficiente silhouette médio: 0.669190
+Configuração 10000/4 concluída!
+
+========================================
+TESTANDO: 10000 pontos, 4 clusters
+========================================
+Gerando dados: 10000 pontos e 4 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=10000 K=4 max_iter=50 eps=1e-06 threadsPerBlock=512
+Iterações: 8 | SSE final: 1347106.704014
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.5 ms
+  Tempo Kernel (GPU):   0.1 ms
+  Tempo D2H (cópias A): 0.3 ms
+  Tempo Total K-means:  1.2 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 9.1 ms
+Coeficiente silhouette médio: 0.669190
+Configuração 10000/4 concluída!
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters
+========================================
+Gerando dados: 100000 pontos e 8 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=100000 K=8 max_iter=50 eps=1e-06 threadsPerBlock=128
+Iterações: 12 | SSE final: 43979309.268086
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.1 ms
+  Tempo Kernel (GPU):   0.4 ms
+  Tempo D2H (cópias A): 2.3 ms
+  Tempo Total K-means:  5.0 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 1350.7 ms
+Coeficiente silhouette médio: 0.600280
+Configuração 100000/8 concluída!
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters
+========================================
+Gerando dados: 100000 pontos e 8 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=100000 K=8 max_iter=50 eps=1e-06 threadsPerBlock=256
+Iterações: 12 | SSE final: 43979309.268086
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.1 ms
+  Tempo Kernel (GPU):   0.4 ms
+  Tempo D2H (cópias A): 2.3 ms
+  Tempo Total K-means:  4.9 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 1343.9 ms
+Coeficiente silhouette médio: 0.600280
+Configuração 100000/8 concluída!
+
+========================================
+TESTANDO: 100000 pontos, 8 clusters
+========================================
+Gerando dados: 100000 pontos e 8 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=100000 K=8 max_iter=50 eps=1e-06 threadsPerBlock=512
+Iterações: 12 | SSE final: 43979309.268086
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.1 ms
+  Tempo Kernel (GPU):   0.4 ms
+  Tempo D2H (cópias A): 2.3 ms
+  Tempo Total K-means:  5.0 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 1342.3 ms
+Coeficiente silhouette médio: 0.600280
+Configuração 100000/8 concluída!
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters
+========================================
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=1000000 K=16 max_iter=50 eps=1e-06 threadsPerBlock=128
+Iterações: 40 | SSE final: 1238641281.008392
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.2 ms
+  Tempo Kernel (GPU):   17.1 ms
+  Tempo D2H (cópias A): 43.6 ms
+  Tempo Total K-means:  121.6 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 271038.7 ms
+Coeficiente silhouette médio: 0.586032
+Configuração 1000000/16 concluída!
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters
+========================================
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=1000000 K=16 max_iter=50 eps=1e-06 threadsPerBlock=256
+Iterações: 40 | SSE final: 1238641281.008392
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.2 ms
+  Tempo Kernel (GPU):   17.1 ms
+  Tempo D2H (cópias A): 44.0 ms
+  Tempo Total K-means:  122.1 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 271717.4 ms
+Coeficiente silhouette médio: 0.586032
+Configuração 1000000/16 concluída!
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters
+========================================
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+--- IMPLEMENTAÇÃO CUDA ---
+K-means 1D (CUDA - Opção A)
+N=1000000 K=16 max_iter=50 eps=1e-06 threadsPerBlock=512
+Iterações: 40 | SSE final: 1238641281.008392
+--- Tempos K-means (ms) ---
+  Tempo H2D (cópias C): 0.8 ms
+  Tempo Kernel (GPU):   17.3 ms
+  Tempo D2H (cópias A): 44.0 ms
+  Tempo Total K-means:  127.2 ms
+--- Tempos Outros (ms) ---
+  Tempo Silhouette (GPU): 271513.8 ms
+Coeficiente silhouette médio: 0.586032
+Configuração 1000000/16 concluída!
+
+========================================
+RESUMO DOS TESTES
+========================================
+Configurações testadas:
+  - 10000 pontos, 4 128 clusters
+  - 10000 pontos, 4 256 clusters
+  - 10000 pontos, 4 512 clusters
+  - 100000 pontos, 8 128 clusters
+  - 100000 pontos, 8 256 clusters
+  - 100000 pontos, 8 512 clusters
+  - 1000000 pontos, 16 128 clusters
+  - 1000000 pontos, 16 256 clusters
+  - 1000000 pontos, 16 512 clusters
+
+
+Arquivos de saída gerados:
+  - Serial: serial/centroids_*.csv, serial/assign_*.csv
+  - CUDA: cuda/centroids_*.csv, cuda/assign_*.csv
+
+Teste completo concluído. Resultados salvos em: results/test_results_20251210_170224.txt

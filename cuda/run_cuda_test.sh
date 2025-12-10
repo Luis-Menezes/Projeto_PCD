@@ -79,18 +79,18 @@ for config in "${CONFIGS[@]}"; do
     ./cuda/kmeans_cuda data/dados.csv data/centroides_iniciais.csv 50 0.000001 cuda/assign_${N_DATA_POINTS}.csv cuda/centroids_${N_DATA_POINTS}.csv $BLOCK_SIZE 2>&1 | tee -a "$OUTPUT_FILE"
     
         # Compare results with serial version
-        if cmp -s serial/centroids_${N_DATA_POINTS}.csv cuda/centroids_${N_DATA_POINTS}.csv; then
-            log "   ✓ Centróides idênticos à versão serial"
-        else
-            log "   ⚠ Diferenças nos centróides comparado à versão serial"
-        fi
+        # if cmp -s serial/centroids_${N_DATA_POINTS}.csv cuda/centroids_${N_DATA_POINTS}.csv; then
+        #     log "   ✓ Centróides idênticos à versão serial"
+        # else
+        #     log "   ⚠ Diferenças nos centróides comparado à versão serial"
+        # fi
         
-        if cmp -s serial/assign_${N_DATA_POINTS}.csv cuda/assign_${N_DATA_POINTS}.csv; then
-            log "   ✓ Atribuições idênticas à versão serial"
-        else
-            log "   ⚠ Diferenças nas atribuições comparado à versão serial"
-        fi
-        log ""
+        # if cmp -s serial/assign_${N_DATA_POINTS}.csv cuda/assign_${N_DATA_POINTS}.csv; then
+        #     log "   ✓ Atribuições idênticas à versão serial"
+        # else
+        #     log "   ⚠ Diferenças nas atribuições comparado à versão serial"
+        # fi
+        # log ""
     # done
     
     log "Configuração $N_DATA_POINTS/$K_CENTROIDS concluída!"

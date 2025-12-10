@@ -128,117 +128,59 @@ static void update_step_1d_serial(const double *X, double *C, const int *assign,
 }
 
 
-/* ---------- KERNEL CUDA (DEVICE) - SILHOUETTE ---------- */
-/* Kernel de Silhouette: 1 thread por ponto i */
-__global__ void silhouette_kernel(const double *X, const int *assign, 
-                                  double *silhouette_scores, int N, int K) 
-{
-    // 1. Descobrir qual ponto (i) este thread deve processar
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+static double silhouetteSample(const double *X, const double *C, const int *assign, int idx, int N, int K) {
+    /* Não paraleliza porque senão vai ser só serializado -> aumenta muito a granularidade (invés de 32 threads vai gerar 32**2 threads)*/
+    int cluster = assign[idx];
+    double a = 0.0; // média da distância intra-cluster
+    double b = 1e300; // mínima média da distância ao outro cluster
 
-    // 2. Garantir que o thread não está fora dos limites
-    if (i < N) {
+    int count_a = 0;
+    for (int j = 0; j < N; j++) {
+        if (j == idx) continue; // não conta a si mesmo
+        if (assign[j] == cluster) {
+            a += fabs(X[idx] - X[j]);
+            count_a++;
+        }
+    }
+    // Calcula a média intra-cluster
+    if (count_a > 0) a /= count_a;
+    else return 0.0; // ponto isolado
+
+    // Calcula a menor distância média inter-cluster (b)
+    for (int c = 0; c < K; c++) {
+        if (c == cluster) continue;
         
-        // --- Início da Lógica (copiada de silhouetteSample) ---
-        int cluster = assign[i];
-        double a = 0.0; // média da distância intra-cluster
-        double b = 1e300; // mínima média da distância ao outro cluster
-
-        // Calcula 'a'
-        int count_a = 0;
+        double dist_sum = 0.0;
+        int count_b = 0;
         for (int j = 0; j < N; j++) {
-            if (j == i) continue; 
-            if (assign[j] == cluster) {
-                a += fabs(X[i] - X[j]);
-                count_a++;
+            if (assign[j] == c) {
+                dist_sum += fabs(X[idx] - X[j]);
+                count_b++;
             }
         }
         
-        if (count_a > 0) a /= count_a;
-        else {
-            silhouette_scores[i] = 0.0; // Ponto isolado
-            return;
+        if (count_b > 0) {
+            double avg_dist = dist_sum / count_b;
+            if (avg_dist < b) b = avg_dist;
         }
-
-        // Calcula 'b'
-        for (int c = 0; c < K; c++) {
-            if (c == cluster) continue;
-            
-            double dist_sum = 0.0;
-            int count_b = 0;
-            for (int j = 0; j < N; j++) {
-                if (assign[j] == c) {
-                    dist_sum += fabs(X[i] - X[j]);
-                    count_b++;
-                }
-            }
-            
-            if (count_b > 0) {
-                double avg_dist = dist_sum / count_b;
-                if (avg_dist < b) b = avg_dist;
-            }
-        }
-
-        if (b == 1e300) { // Não há outro cluster
-             silhouette_scores[i] = 0.0;
-             return;
-        }
-        if (a == b) {
-            silhouette_scores[i] = 0.0;
-            return;
-        }
-        
-        // Escreve o score final para o ponto 'i'
-        silhouette_scores[i] = (b - a) / fmax(a, b);
     }
+
+    if(b== 1e300) return 0.0; // não há outro cluster
+    if (a==b) return 0.0;
+    else return (b - a) / fmax(a, b);
 }
-
-/* ---------- Wrapper CUDA para Silhouette (HOST) ---------- */
-static double calculaSilhouette_cuda(
-    // Ponteiros do Device (precisamos de X e assign na GPU)
-    const double *X_d, 
-    const int *assign_d,
-    // Buffers de saída (para os scores)
-    double *scores_d,
-    double *scores_h,
-    // Parâmetros
-    int N, int K, 
-    // Saída de tempo
-    float *ms_out) 
-{
-    // 1. Configurar geometria do Kernel
-    int threadsPerBlock = 256;
-    int numBlocks = (N + threadsPerBlock - 1) / threadsPerBlock;
-
-    // 2. Criar eventos de tempo
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-
-    // 3. Lançar Kernel e medir tempo
-    cudaEventRecord(start);
-    silhouette_kernel<<<numBlocks, threadsPerBlock>>>(X_d, assign_d, scores_d, N, K);
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop); // Espera a GPU terminar
-    cudaEventElapsedTime(ms_out, start, stop);
-
-    // 4. Copiar os scores individuais de volta para a CPU
-    cudaMemcpy(scores_h, scores_d, (size_t)N * sizeof(double), cudaMemcpyDeviceToHost);
-
-    // 5. Fazer a redução final (soma) na CPU
-    //    Podemos usar OpenMP aqui para acelerar ainda mais.
+/* Implementado com base na implementação do scikit-learn: 
+https://github.com/scikit-learn/scikit-learn/blob/c60dae20604f8b9e585fc18a8fa0e0fb50712179/sklearn/metrics/cluster/_unsupervised.py#L51 */
+static double calculaSilhouette(const double *X, const double *C, const int *assign, int N, int K){
     double silhouette_sum = 0.0;
+
     #pragma omp parallel for reduction(+:silhouette_sum)
-    for (int i = 0; i < N; i++) {
-        silhouette_sum += scores_h[i];
+    for(int i=0; i<N; i++){
+        silhouette_sum += silhouetteSample(X, C, assign, i, N, K);
     }
-
-    // 6. Limpar
-    cudaEventDestroy(start);
-    cudaEventDestroy(stop);
-
     return silhouette_sum / N;
 }
+
 
 /* ---------- k-means 1D (HOST) - Orquestrador ---------- */
 static void kmeans_1d(
@@ -396,9 +338,7 @@ int main(int argc, char **argv){
     cudaMemcpy(assign_d, assign_h, (size_t)N * sizeof(int), cudaMemcpyHostToDevice);
     
     float ms_silhouette = 0.0;
-    double silhouette = calculaSilhouette_cuda(X_d, assign_d, 
-                                               silhouette_scores_d, silhouette_scores_h,
-                                               N, K, &ms_silhouette);
+    double silhouette = calculaSilhouette(X_h, C_h, assign_h, N, K);
 
 
     // --- 6. Impressão de Resultados ---

@@ -1,0 +1,94 @@
+=== K-MEANS 1D SCHEDULE TEST RESULTS ===
+Data e hora: Wed Dec 10 04:07:50 PM -03 2025
+========================================
+
+Gerando dados: 1000000 pontos e 16 centróides iniciais
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: static, Threads: 32 Chunk Sizes: 0
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 0 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906474 | Tempo: 16.4 ms
+Tempo medido com omp_get_wtime(): 0.016357 segundos
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: static, Threads: 32 Chunk Sizes: 10
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 10 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906475 | Tempo: 17.3 ms
+Tempo medido com omp_get_wtime(): 0.017252 segundos
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: static, Threads: 32 Chunk Sizes: 100
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 100 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906474 | Tempo: 16.9 ms
+Tempo medido com omp_get_wtime(): 0.016893 segundos
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: static, Threads: 32 Chunk Sizes: 1000
+========================================
+Executando k-means OpenMP com agendamento static, chunk size de 1000 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906475 | Tempo: 21.6 ms
+Tempo medido com omp_get_wtime(): 0.021623 segundos
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 0
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 0 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906475 | Tempo: 17.5 ms
+Tempo medido com omp_get_wtime(): 0.017517 segundos
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 10
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 10 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906474 | Tempo: 30.6 ms
+Tempo medido com omp_get_wtime(): 0.030590 segundos
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 100
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 100 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906474 | Tempo: 16.7 ms
+Tempo medido com omp_get_wtime(): 0.016693 segundos
+
+========================================
+TESTANDO: 1000000 pontos, 16 clusters, Schedule: dynamic, Threads: 32 Chunk Sizes: 1000
+========================================
+Executando k-means OpenMP com agendamento dynamic, chunk size de 1000 e 32 threads...
+OpenMP habilitado com 32 threads configuradas.
+Threads efetivamente utilizadas: 32
+K-means 1D (naive)
+N=1000000 K=16 max_iter=50 eps=0.0001
+Iterações: 26 | SSE final: 1238938158.906474 | Tempo: 17.4 ms
+Tempo medido com omp_get_wtime(): 0.017393 segundos
+

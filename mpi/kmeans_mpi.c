@@ -376,14 +376,16 @@ int main(int argc, char **argv){
         printf("N=%d K=%d P=%d processos\n", N, K, size);
         printf("Iterações: %d | SSE final: %.6f\n", iters, sse_final);
         
-        double total_time = t_end - t_start;
-        printf("Tempo Total K-means: %.4f s\n", total_time);
-        printf("Tempo Comunicação (Allreduce): %.4f s (%.1f%%)\n", 
-               comm_time, (comm_time/total_time)*100.0);
+        double total_time_ms = (t_end - t_start) * 1000.0;
+        double comm_time_ms  = comm_time * 1000.0; 
         
-        printf("Tempo Silhouette: %.4f s\n", t_sil_end - t_sil_start);
-        printf("Coeficiente silhouette médio: %.6f\n", silhouette);
-
+        printf("Tempo Total K-means: %.4f ms\n", total_time_ms);
+        printf("Tempo Comunicação (Allreduce): %.4f ms (%.1f%%)\n", 
+               comm_time_ms, 
+               (comm_time_ms / total_time_ms) * 100.0);
+        
+        printf("Tempo Silhouette: %.4f ms\n", (t_sil_end - t_sil_start) * 1000);
+        printf("Coeficiente silhouette médio: %.3f\n", silhouette);
         // Salvar
         const char *outAssign = (argc>5)? argv[5] : NULL;
         const char *outCentroid = (argc>6)? argv[6] : NULL;

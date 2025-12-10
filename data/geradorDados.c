@@ -39,7 +39,7 @@ int main(int argc, char **argv){
     }
 
     /* Controla o espalhamento dos pontos - valor pequeno cria clusters densos */
-    double spread = 5.0;
+    double spread = 5.0*K;
 
     /* A sememente fixa garante que os dados gerados sejam sempre os mesmos - reprodutibilidade dos testes */
     srand(42);
