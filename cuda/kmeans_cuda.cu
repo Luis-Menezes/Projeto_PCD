@@ -13,7 +13,8 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include <cuda_runtime.h> // Adicionado para CUDA
+#include <cuda_runtime.h> 
+#include <omp.h>
 // #include <device_launch_parameters.h>
 
 /* ---------- Funções Utilitárias (CSV) - Inalteradas ---------- */
@@ -337,9 +338,10 @@ int main(int argc, char **argv){
     // para que o silhouette_kernel use os dados corretos.
     cudaMemcpy(assign_d, assign_h, (size_t)N * sizeof(int), cudaMemcpyHostToDevice);
     
-    float ms_silhouette = 0.0;
-    double silhouette = calculaSilhouette(X_h, C_h, assign_h, N, K);
-
+    double t0_silhouette = omp_get_wtime();
+    float silhouette = calculaSilhouette(X_h, C_h, assign_h, N, K);
+    double t1_silhouette = omp_get_wtime();
+    double sil_ms =  (double)(t1_silhouette - t0_silhouette) * 1000;
 
     // --- 6. Impressão de Resultados ---
     printf("K-means 1D (CUDA - Opção A)\n");
@@ -351,7 +353,7 @@ int main(int argc, char **argv){
     printf("  Tempo D2H (cópias A): %.1f ms\n", d2h_ms);
     printf("  Tempo Total K-means:  %.1f ms\n", total_kmeans_ms);
     printf("--- Tempos Outros (ms) ---\n");
-    printf("  Tempo Silhouette (GPU): %.1f ms\n", ms_silhouette); // Agora medido pela GPU
+    printf("  Tempo Silhouette (GPU): %.1f ms\n", sil_ms); 
     printf("Coeficiente silhouette médio: %.6f\n", silhouette);
 
     // --- 7. Salvar Saídas ---

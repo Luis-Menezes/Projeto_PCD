@@ -11,7 +11,10 @@ OUTPUT_FILE="results/test_results_${TIMESTAMP}.txt"
 
 # Test configurations: N_DATA_POINTS K_CENTROIDS
 CONFIGS=(
+    "10000 4 64"
     "10000 4 128"
+    "10000 4 256"
+    "10000 4 512"
     "10000 4 256"
     "10000 4 512"
     "100000 8 128"
