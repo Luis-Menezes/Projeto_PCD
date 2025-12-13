@@ -1,6 +1,6 @@
 # K-means 1D (*naive*) com Paralelização Progressiva
 
-Este repositório consiste no projeto final da disciplina de Programação Concorrente e Distribuída, ministrada pelos professores Dr. Álvaro Fazenda e Denise Stringhini na Universidade Federal de São Paulo (UNIFESP). 
+Este repositório consiste no projeto final da disciplina de Programação Concorrente e Distribuída, ministrada pelos professores Dr. Álvaro Fazenda e Dra. Denise Stringhini na Universidade Federal de São Paulo (UNIFESP). 
 
 ## Alunos:
 
@@ -9,9 +9,9 @@ Este repositório consiste no projeto final da disciplina de Programação Conco
 
 ## Arquitetura do projeto:
 
-O projeto consiste na análise progressiva da paralelização do algoritmo de *clusterização* **K-means 1D**. Essa análise partiu da implementação sequencial (baseline) e da primeira etapa de paralelização em CPU com memória compartilhada (OpenMP). Atualmente, o projeto encontra-se na etapa de paralelização com memória distribuída (MPI).
+O projeto consiste na análise progressiva da paralelização do algoritmo de clusterização **K-means 1D**. A análise teve como ponto de partida a implementação serial. A partir dela, foram desenvolvidas três etapas: (i) paralelização em CPU com memória compartilhada utilizando OpenMP; (ii) paralelização heterogênea entre CPU e GPU com CUDA; e (iii) paralelização com memória distribuída utilizando MPI.
 
-Cada abordagem do algoritmo será estará em uma pasta específica: ```serial/```, ```openMP/```, ```cuda/``` e ```mpi/```. A pasta ```data/``` contém o ```.csv``` que será utilizado pelo algoritmo em geral, bem como o código utilizado para gerar esses pontos.
+Cada abordagem do algoritmo está contida em uma pasta específica: ```serial/```, ```openMP/```, ```cuda/``` e ```mpi/```. A pasta ```data/``` contém o ```.csv``` que será utilizado pelo algoritmo em geral, bem como o código utilizado para gerar esses pontos.
 
 Contemplando todas as etapas descritas no enunciado da disciplina:
 - Etapa 0 - Versão Sequencial (baseline)
