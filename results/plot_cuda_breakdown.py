@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-# Cole o conteúdo COMPLETO do seu arquivo txt aqui
+# Cole o conteúdo COMPLETO do seu arquivo txt aqui (mesmo do plot_results_overnight.py)
 raw_data = """
 === RELATÓRIO FINAL DE EXPERIMENTOS PCD ===
 Inicio: Thu Dec 11 06:57:30 PM -03 2025
@@ -624,255 +624,131 @@ Configuração N=1000000 finalizada.
 Experimentos concluídos. Verifique results/final_results_overnight_20251211_185730.txt
 """
 
-
-def parse_report(text):
+def parse_cuda_timings(text):
+    """
+    Extrai os tempos H2D, Kernel e D2H das execuções CUDA
+    """
     data = []
-    current_n = 0
-    current_tech = None
-    current_config = 0
+    current_n = None
+    current_block = None
     
     lines = text.split('\n')
     
-    for line in lines:
+    for i, line in enumerate(lines):
         line = line.strip()
         
-        # Regex Parsers
+        # Detecta o dataset atual
         dataset_match = re.search(r"DATASET: N=(\d+)", line)
         if dataset_match:
             current_n = int(dataset_match.group(1))
             continue
-            
-        serial_match = re.search(r"-> \[SERIAL\]", line)
-        if serial_match:
-            current_tech = "Serial"
-            current_config = 1
+        
+        # Detecta o block size
+        block_match = re.search(r"Running CUDA with Block Size = (\d+)", line)
+        if block_match:
+            current_block = int(block_match.group(1))
             continue
-            
-        omp_match = re.search(r"Running OMP with (\d+) threads", line)
-        if omp_match:
-            current_tech = "OpenMP"
-            current_config = int(omp_match.group(1))
-            continue
-            
-        mpi_match = re.search(r"Running MPI with (\d+) processes", line)
-        if mpi_match:
-            current_tech = "MPI"
-            current_config = int(mpi_match.group(1))
-            continue
-            
-        cuda_match = re.search(r"Running CUDA with Block Size = (\d+)", line)
-        if cuda_match:
-            current_tech = "CUDA"
-            current_config = int(cuda_match.group(1))
-            continue
-            
-        # Extração de Métricas
-        # Padrão para SSE (comum a todos)
-        sse_match = re.search(r"SSE final: ([\d.]+)", line)
         
-        # Padrão para Tempo (Serial/OMP ficam na mesma linha ou próxima ao SSE)
-        time_simple_match = re.search(r"Tempo: ([\d.]+) ms", line)
+        # Captura os tempos (H2D, Kernel, D2H)
+        h2d_match = re.search(r"Tempo H2D \(cópias C\):\s+([\d.]+) ms", line)
+        kernel_match = re.search(r"Tempo Kernel \(GPU\):\s+([\d.]+) ms", line)
+        d2h_match = re.search(r"Tempo D2H \(cópias A\):\s+([\d.]+) ms", line)
         
-        # Padrão para Tempo MPI/CUDA (mais explícito)
-        time_full_match = re.search(r"Tempo Total K-means:\s+([\d.]+) ms", line)
-        
-        # Padrão para Silhouette
-        sil_match = re.search(r"Coeficiente silhouette médio: ([\d.]+)", line)
-        
-        # Lógica de inserção
-        # Nota: O Serial tem "Tempo: X" na linha de SSE e "Tempo: Y" na linha Silhouette.
-        # Queremos o Tempo do K-means (linha SSE)
-        
-        if sse_match:
-            sse_val = float(sse_match.group(1))
+        if h2d_match and current_n and current_block:
+            h2d_time = float(h2d_match.group(1))
             
-            # Se for Serial ou OpenMP, o tempo costuma estar nesta mesma linha
-            if current_tech in ["Serial", "OpenMP"] and time_simple_match:
-                time_val = float(time_simple_match.group(1))
-                # Silhouette geralmente vem na próxima linha, inicializamos como None
+            # Próximas linhas devem conter Kernel e D2H
+            kernel_time = None
+            d2h_time = None
+            
+            for j in range(i+1, min(i+5, len(lines))):
+                next_line = lines[j].strip()
+                if not kernel_time:
+                    km = re.search(r"Tempo Kernel \(GPU\):\s+([\d.]+) ms", next_line)
+                    if km:
+                        kernel_time = float(km.group(1))
+                if not d2h_time:
+                    dm = re.search(r"Tempo D2H \(cópias A\):\s+([\d.]+) ms", next_line)
+                    if dm:
+                        d2h_time = float(dm.group(1))
+                        
+            if kernel_time is not None and d2h_time is not None:
                 data.append({
-                    "N": current_n, "Tech": current_tech, "Config": current_config, 
-                    "Time_ms": time_val, "SSE": sse_val, "Silhouette": None
+                    'N': current_n,
+                    'BlockSize': current_block,
+                    'H2D': h2d_time,
+                    'Kernel': kernel_time,
+                    'D2H': d2h_time
                 })
-            # MPI e CUDA capturamos o SSE, mas o tempo vem depois
-            elif current_tech in ["MPI", "CUDA"]:
-                 data.append({
-                    "N": current_n, "Tech": current_tech, "Config": current_config, 
-                    "Time_ms": None, "SSE": sse_val, "Silhouette": None
-                })
-
-        # Preenchendo dados faltantes (Tempo MPI/CUDA ou Silhouette)
-        if time_full_match and current_tech in ["MPI", "CUDA"]:
-            # Atualiza o último registro adicionado
-            if data and data[-1]["Tech"] == current_tech:
-                data[-1]["Time_ms"] = float(time_full_match.group(1))
-                
-        if sil_match:
-            if data:
-                data[-1]["Silhouette"] = float(sil_match.group(1))
-
+    
     return pd.DataFrame(data)
 
-def process_data(df):
-    # Calcular Speedup
-    # Speedup = Tempo_Serial / Tempo_Paralelo (para o mesmo N)
-    df['Speedup'] = 0.0
+def plot_cuda_breakdown_with_std(df):
+    """
+    Gera 3 subplots (um por dataset) mostrando H2D, Kernel e D2H
+    com barras de erro representando o desvio padrão entre diferentes block sizes
+    """
+    sns.set_theme(style="whitegrid")
     
-    # Isolar tempos seriais
-    serial_times = df[df['Tech'] == 'Serial'].set_index('N')['Time_ms'].to_dict()
+    datasets = sorted(df['N'].unique())
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    fig.suptitle('CUDA K-means: Breakdown de Tempo por Componente (H2D, Kernel, D2H)', fontsize=16)
     
-    for index, row in df.iterrows():
-        n = row['N']
-        if n in serial_times and row['Time_ms'] > 0:
-            df.at[index, 'Speedup'] = serial_times[n] / row['Time_ms']
-            
-    return df
-
-def generate_speedup_plot(df, ax):
-    subset_speedup = df[df['Tech'].isin(['OpenMP', 'MPI', 'CUDA'])]
-    
-    sns.lineplot(data=subset_speedup, x='Config', y='Speedup', hue='Tech', marker='o', style='Tech', ax=ax, linewidth=2)
-    
-    # Linha Ideal
-    min_config = subset_speedup['Config'].min()
-    max_config = subset_speedup['Config'].max()
-    ax.plot([min_config, max_config], [min_config, max_config], 'k--', alpha=0.5, label='Ideal Linear')
-    
-    ax.set_title('Speedup vs Recursos (DBK{N})'.format(N=int(np.log10(df['N'].iloc[0])-3)))
-    ax.set_xlabel('Número de Threads/Processos')
-    ax.set_ylabel('Speedup (T_serial / T_paralelo)')
-    ax.set_xscale('log', base=2)
-    ax.set_yscale('log', base=2)
-    ax.legend()
-
-def generate_execution_time_plot(df, ax):
-    serial_time = df[df['Tech'] == 'Serial']['Time_ms'].values[0]
-    
-    sns.lineplot(data=df[df['Tech'] != 'Serial'], x='Config', y='Time_ms', hue='Tech', marker='o', ax=ax)
-    ax.axhline(y=serial_time, color='r', linestyle='--', label=f'Serial ({serial_time:.1f}ms)')
-    
-    ax.set_title('Tempo de Execução (DBK{N})'.format(N=int(np.log10(df['N'].iloc[0])-3)))
-    ax.set_xlabel('Configuração (Threads/Procs/Blocks)')
-    ax.set_ylabel('Tempo (ms)')
-    ax.set_xscale('log', base=2)
-    ax.legend()
-
-def generate_correctness_plot(df, ax):
-    df['SSE_Scaled'] = df['SSE'] / 1e9
-    
-    # Criar um eixo gêmeo para mostrar Silhouette e SSE juntos
-    ax3 = ax
-    ax3_twin = ax3.twinx()
-    
-    sns.scatterplot(data=df, x='Tech', y='SSE_Scaled', color='blue', s=100, label='SSE (x10^9)', ax=ax3, legend=False)
-    sns.scatterplot(data=df, x='Tech', y='Silhouette', color='orange', marker='X', s=100, label='Silhouette', ax=ax3_twin, legend=False)
-    
-    ax3.set_title('Validação de Corretude (Estabilidade dos Resultados)')
-    ax3.set_ylabel('SSE (Soma dos Quadrados)')
-    ax3_twin.set_ylabel('Coeficiente Silhouette')
-    
-    # Ajustar legendas manuais
-    lines, labels = ax3.get_legend_handles_labels()
-    lines2, labels2 = ax3_twin.get_legend_handles_labels()
-    ax3.legend(lines + lines2, labels + labels2, loc='upper right')
-
-def generate_best_time_plot(df, ax, max_n):
-    best_times = df.loc[df.groupby('Tech')['Time_ms'].idxmin()]
-    
-    barplot = sns.barplot(data=best_times, x='Tech', y='Time_ms', hue='Tech', palette='viridis', ax=ax, legend=False)
-    ax.set_title(f'Melhor Tempo Absoluto (DBK{max_n})')
-    ax.set_ylabel('Tempo (ms)')
-    
-    # Adicionar labels nas barras
-    for container in ax.containers:
-        ax.bar_label(container, fmt='%.1f ms')
-
-def generate_plots(df):
-
-   # Imprime o gráfico para cada tamanho de dataset
-   # plt.figure(figsize=(10, 6))
-   fig, axes = plt.subplots(1, 3, figsize=(15, 6))
-   fig.suptitle('Análise de Speedup vs Recursos por Dataset', fontsize=14)
-   for i in df['N'].unique():
-      idx = int(np.log10(i)-4) 
-      sns.set_theme(style="whitegrid")
-      df_n = df[df['N'] == i].copy()
-      generate_speedup_plot(df_n, axes[idx])
-
-   plt.tight_layout()
-   plt.savefig('speedup_por_dataset.png')
-   plt.show()
-      
-
-   fig, axes = plt.subplots(1, 3, figsize=(15, 6))
-   fig.suptitle('Análise de Tempo de Execução vs Recursos por Dataset', fontsize=14)
-   for i in df['N'].unique():
-      idx = int(np.log10(i)-4) 
-      sns.set_theme(style="whitegrid")
-      df_n = df[df['N'] == i].copy()
-      generate_execution_time_plot(df_n, axes[idx])
-
-   plt.tight_layout()
-   plt.savefig('execution_time_por_dataset.png')
-   plt.show()
-
-   fig, axes = plt.subplots(1, 3, figsize=(15, 6))
-   fig.suptitle('Análise de Melhor Tempo por Dataset', fontsize=14)
-   for i in df['N'].unique():
-      idx = int(np.log10(i)-4) 
-      sns.set_theme(style="whitegrid")
-      df_n = df[df['N'] == i].copy()
-      generate_best_time_plot(df_n, axes[idx], idx)
-
-   plt.tight_layout()
-   plt.savefig('best_time_por_dataset.png')
-   plt.show()
-
-
-   # Configurações visuais
-   # sns.set_theme(style="whitegrid")
-   # # Filtro para o maior Dataset (onde a escalabilidade importa mais)
-   # max_n = df['N'].max()
-   # df_max = df[df['N'] == max_n].copy()
-   
-   # # Criar figura com subplots (2 linhas, 2 colunas)
-   # fig, axes = plt.subplots(2, 2, figsize=(18, 12))
-   # fig.suptitle(f'Análise de Desempenho PCD (Dataset N={max_n})', fontsize=16)
-
-   # # ---------------------------------------------------------
-   # # Gráfico 1: Speedup vs Recursos (OpenMP e MPI)
-   # # ---------------------------------------------------------
-   # # CUDA não entra aqui pois BlockSize não é "Core Count" linear
-   # generate_speedup_plot(df_max, axes[0, 0])
-
-   # # ---------------------------------------------------------
-   # # Gráfico 2: Tempo de Execução vs Configuração (Todas as Techs)
-   # # ---------------------------------------------------------
-   # # Aqui comparamos Serial, OpenMP, MPI e CUDA
-   # # Serial será uma linha horizontal constante
-   # generate_execution_time_plot(df_max, axes[0, 1])
-
-   # # ---------------------------------------------------------
-   # # Gráfico 3: Corretude (SSE e Silhouette)
-   # # ---------------------------------------------------------
-   # # Vamos usar um Scatter plot para mostrar que os valores não variam
-   # # Normalizar SSE para visualização (dividir por 1e9 para N=1M)
-   # generate_correctness_plot(df_max, axes[1, 0])
-
-   # # ---------------------------------------------------------
-   # # Gráfico 4: Melhor Tempo por Tecnologia (Bar Chart)
-   # # ---------------------------------------------------------
-   # # Pegar o menor tempo de cada tecnologia
-   # generate_best_time_plot(df_max, axes[1, 1], max_n)
-
-   # plt.tight_layout()
-   # plt.savefig('pcd_resultados.png')
-   # # plt.show()
+    for idx, n in enumerate(datasets):
+        df_n = df[df['N'] == n]
+        
+        # Calcula média e desvio padrão para cada componente
+        means = {
+            'H2D': df_n['H2D'].mean(),
+            'Kernel': df_n['Kernel'].mean(),
+            'D2H': df_n['D2H'].mean()
+        }
+        
+        stds = {
+            'H2D': df_n['H2D'].std(),
+            'Kernel': df_n['Kernel'].std(),
+            'D2H': df_n['D2H'].std()
+        }
+        
+        # Dados para o barplot
+        components = list(means.keys())
+        mean_values = list(means.values())
+        std_values = list(stds.values())
+        
+        # Cria o barplot com barras de erro
+        ax = axes[idx]
+        bars = ax.bar(components, mean_values, yerr=std_values, 
+                     capsize=5, alpha=0.8, color=['#2c7bb6', '#abd9e9', '#fdae61'])
+        
+        # Adiciona labels nos topos das barras
+        for bar, mean_val, std_val in zip(bars, mean_values, std_values):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + std_val,
+                   f'{mean_val:.2f}±{std_val:.2f}',
+                   ha='center', va='bottom', fontsize=9)
+        
+        # Formatação
+        dbk_label = int(np.log10(n) - 3)
+        ax.set_title(f'DBK{dbk_label} (N={n:,} pontos)')
+        ax.set_ylabel('Tempo (ms)')
+        ax.set_xlabel('Componente')
+        ax.grid(axis='y', alpha=0.3)
+        
+    plt.tight_layout()
+    plt.savefig('cuda_breakdown_with_std.png', dpi=300)
+    print("Gráfico salvo como 'cuda_breakdown_with_std.png'")
+    plt.show()
 
 # --- Execução Principal ---
-# df = parse_report(raw_data)
-# df = process_data(df)
-# df.to_csv("pcd_dados_processados.csv", index=False)
-df = pd.read_csv("pcd_dados_processados.csv")
-print("CSV gerado: pcd_dados_processados.csv")
-generate_plots(df)
+if __name__ == "__main__":
+    df_cuda = parse_cuda_timings(raw_data)
+    
+    if df_cuda.empty:
+        print("ERRO: Nenhum dado CUDA foi encontrado no log.")
+    else:
+        print("Dados CUDA extraídos:")
+        print(df_cuda)
+        print("\nEstatísticas por Dataset:")
+        print(df_cuda.groupby('N')[['H2D', 'Kernel', 'D2H']].agg(['mean', 'std']))
+        
+        plot_cuda_breakdown_with_std(df_cuda)
