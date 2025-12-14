@@ -340,7 +340,7 @@ Tempo Comunicação (Allreduce): 0.9972 ms (77.2%)
 Tempo Silhouette: 2321.7883 ms
 Coeficiente silhouette médio: 0.600
       [VALIDAÇÃO: OK]
-   Running MPI with 64 processes...
+   Running MPI with 64 processos...
 K-means 1D (MPI Distribuído)
 N=100000 K=8 P=64 processos
 Iterações: 12 | SSE final: 43979309.268087
@@ -533,7 +533,7 @@ Tempo Comunicação (Allreduce): 2.9107 ms (9.3%)
 Tempo Silhouette: 959781.7340 ms
 Coeficiente silhouette médio: 0.586
       [VALIDAÇÃO: OK]
-   Running MPI with 32 processes...
+   Running MPI with 32 processos...
 K-means 1D (MPI Distribuído)
 N=1000000 K=16 P=32 processos
 Iterações: 40 | SSE final: 1238641281.008404
@@ -542,7 +542,7 @@ Tempo Comunicação (Allreduce): 70.4782 ms (79.4%)
 Tempo Silhouette: 1110271.2150 ms
 Coeficiente silhouette médio: 0.586
       [VALIDAÇÃO: OK]
-   Running MPI with 64 processes...
+   Running MPI with 64 processos...
 K-means 1D (MPI Distribuído)
 N=1000000 K=16 P=64 processos
 Iterações: 40 | SSE final: 1238641281.008404
@@ -764,17 +764,35 @@ def generate_correctness_plot(df, ax):
     ax3 = ax
     ax3_twin = ax3.twinx()
     
-    sns.scatterplot(data=df, x='Tech', y='SSE_Scaled', color='blue', s=100, label='SSE (x10^9)', ax=ax3, legend=False)
-    sns.scatterplot(data=df, x='Tech', y='Silhouette', color='orange', marker='X', s=100, label='Silhouette', ax=ax3_twin, legend=False)
+    # Remove legend=False e adiciona palette para controle de cores
+    palette = sns.color_palette("husl", n_colors=len(df['N'].unique()))
+    
+    sns.scatterplot(data=df, x='Tech', y='SSE_Scaled', hue='N', s=100, 
+                   palette=palette, ax=ax3, legend=False)
+    sns.scatterplot(data=df, x='Tech', y='Silhouette', hue='N', marker='X', 
+                   s=100, palette=palette, ax=ax3_twin, legend=False)
     
     ax3.set_title('Validação de Corretude (Estabilidade dos Resultados)')
-    ax3.set_ylabel('SSE (Soma dos Quadrados)')
+    ax3.set_ylabel('SSE (x10^9)')
+    ax3.set_ylim(-0.1, df['SSE_Scaled'].max() * 1.1)  
+    ax3_twin.set_ylim(0.5, 0.75)  # Silhouette varia de 0 a 1
     ax3_twin.set_ylabel('Coeficiente Silhouette')
+    ax3.grid(True, alpha=0.3)  # Grid unificado apenas no eixo principal
+    ax3_twin.grid(False)  # Desativa grid no eixo secundário
+    # Criar legenda manual unificada
+    import matplotlib.patches as mpatches
+    handles = []
+    for i, n in enumerate(sorted(df['N'].unique())):
+        handles.append(mpatches.Patch(color=palette[i], label=f'DBK{int(np.log10(n)-3)}'))
     
-    # Ajustar legendas manuais
-    lines, labels = ax3.get_legend_handles_labels()
-    lines2, labels2 = ax3_twin.get_legend_handles_labels()
-    ax3.legend(lines + lines2, labels + labels2, loc='upper right')
+    # Adiciona marcadores para SSE vs Silhouette
+    from matplotlib.lines import Line2D
+    handles.append(Line2D([0], [0], marker='o', color='w', markerfacecolor='gray', 
+                         markersize=8, label='SSE'))
+    handles.append(Line2D([0], [0], marker='X', color='w', markerfacecolor='gray', 
+                         markersize=8, label='Silhouette'))
+    
+    ax3.legend(handles=handles, loc='upper left', framealpha=0.9)
 
 def generate_best_time_plot(df, ax, max_n):
     best_times = df.loc[df.groupby('Tech')['Time_ms'].idxmin()]
@@ -791,43 +809,50 @@ def generate_plots(df):
 
    # Imprime o gráfico para cada tamanho de dataset
    # plt.figure(figsize=(10, 6))
-   fig, axes = plt.subplots(1, 3, figsize=(15, 6))
-   fig.suptitle('Análise de Speedup vs Recursos por Dataset', fontsize=14)
-   for i in df['N'].unique():
-      idx = int(np.log10(i)-4) 
-      sns.set_theme(style="whitegrid")
-      df_n = df[df['N'] == i].copy()
-      generate_speedup_plot(df_n, axes[idx])
+   # fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+   # fig.suptitle('Análise de Speedup vs Recursos por Dataset', fontsize=14)
+   # for i in df['N'].unique():
+   #    idx = int(np.log10(i)-4) 
+   #    sns.set_theme(style="whitegrid")
+   #    df_n = df[df['N'] == i].copy()
+   #    generate_speedup_plot(df_n, axes[idx])
 
-   plt.tight_layout()
-   plt.savefig('speedup_por_dataset.png')
-   plt.show()
+   # plt.tight_layout()
+   # plt.savefig('speedup_por_dataset.png')
+   # # plt.show()
       
 
-   fig, axes = plt.subplots(1, 3, figsize=(15, 6))
-   fig.suptitle('Análise de Tempo de Execução vs Recursos por Dataset', fontsize=14)
-   for i in df['N'].unique():
-      idx = int(np.log10(i)-4) 
-      sns.set_theme(style="whitegrid")
-      df_n = df[df['N'] == i].copy()
-      generate_execution_time_plot(df_n, axes[idx])
+   # fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+   # fig.suptitle('Análise de Tempo de Execução vs Recursos por Dataset', fontsize=14)
+   # for i in df['N'].unique():
+   #    idx = int(np.log10(i)-4) 
+   #    sns.set_theme(style="whitegrid")
+   #    df_n = df[df['N'] == i].copy()
+   #    generate_execution_time_plot(df_n, axes[idx])
 
+   # plt.tight_layout()
+   # plt.savefig('execution_time_por_dataset.png')
+   # # plt.show()
+
+   # fig, axes = plt.subplots(1, 3, figsize=(15, 6))
+   # fig.suptitle('Análise de Melhor Tempo por Dataset', fontsize=14)
+   # for i in df['N'].unique():
+   #    idx = int(np.log10(i)-4) 
+   #    sns.set_theme(style="whitegrid")
+   #    df_n = df[df['N'] == i].copy()
+   #    generate_best_time_plot(df_n, axes[idx], idx)
+
+   # plt.tight_layout()
+   # plt.savefig('best_time_por_dataset.png')
+   # plt.show()
+
+   fig, ax = plt.subplots(figsize=(8, 6))
+   sns.set_theme(style="whitegrid")
+   plt.title("Análise de Corretude (SSE e Silhouette)")
+   generate_correctness_plot(df, ax)
    plt.tight_layout()
-   plt.savefig('execution_time_por_dataset.png')
+   plt.savefig('correctness_analysis.png')
    plt.show()
-
-   fig, axes = plt.subplots(1, 3, figsize=(15, 6))
-   fig.suptitle('Análise de Melhor Tempo por Dataset', fontsize=14)
-   for i in df['N'].unique():
-      idx = int(np.log10(i)-4) 
-      sns.set_theme(style="whitegrid")
-      df_n = df[df['N'] == i].copy()
-      generate_best_time_plot(df_n, axes[idx], idx)
-
-   plt.tight_layout()
-   plt.savefig('best_time_por_dataset.png')
-   plt.show()
-
 
    # Configurações visuais
    # sns.set_theme(style="whitegrid")

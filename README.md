@@ -17,5 +17,5 @@ Contemplando todas as etapas descritas no enunciado da disciplina:
 - Etapa 0 - Versão Sequencial (baseline)
 - Etapa 1 - OpenMP (CPU)
 - Etapa 2 - CUDA (GPU)
-- Etapa 3 - MPI (distribuída)
+- Etapa 3 - MPI (memória distribuída)
 - Etapa 4 - Entrega Final
